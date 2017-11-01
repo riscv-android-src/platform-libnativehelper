@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef SCOPED_LOCAL_REF_H_included
-#define SCOPED_LOCAL_REF_H_included
+#ifndef NATIVEHELPER_JNIHELP_PRIV_H_
+#define NATIVEHELPER_JNIHELP_PRIV_H_
 
-#include "JNIHelp.h"
-#include <nativehelper/scoped_local_ref.h>
+namespace android {
 
-#endif  // SCOPED_LOCAL_REF_H_included
+void ClearJNIHelpLocalCache();
+
+}  // namespace android
+
+#endif  // JNIHELP_PRIV

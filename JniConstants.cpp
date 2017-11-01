@@ -17,8 +17,10 @@
 #define LOG_TAG "JniConstants"
 
 #include "ALog-priv.h"
-#include "JniConstants.h"
-#include "ScopedLocalRef.h"
+#include "JNIHelp-priv.h"
+#include <nativehelper/JniConstants.h>
+#include <nativehelper/JniConstants-priv.h>
+#include <nativehelper/ScopedLocalRef.h>
 
 #include <stdlib.h>
 
@@ -45,8 +47,6 @@ jclass JniConstants::inetSocketAddressHolderClass;
 jclass JniConstants::integerClass;
 jclass JniConstants::localeDataClass;
 jclass JniConstants::longClass;
-jclass JniConstants::mutableIntClass;
-jclass JniConstants::mutableLongClass;
 jclass JniConstants::netlinkSocketAddressClass;
 jclass JniConstants::packetSocketAddressClass;
 jclass JniConstants::patternSyntaxExceptionClass;
@@ -56,7 +56,6 @@ jclass JniConstants::stringClass;
 jclass JniConstants::structAddrinfoClass;
 jclass JniConstants::structFlockClass;
 jclass JniConstants::structGroupReqClass;
-jclass JniConstants::structGroupSourceReqClass;
 jclass JniConstants::structIfaddrs;
 jclass JniConstants::structLingerClass;
 jclass JniConstants::structPasswdClass;
@@ -64,6 +63,7 @@ jclass JniConstants::structPollfdClass;
 jclass JniConstants::structStatClass;
 jclass JniConstants::structStatVfsClass;
 jclass JniConstants::structTimevalClass;
+jclass JniConstants::structTimespecClass;
 jclass JniConstants::structUcredClass;
 jclass JniConstants::structUtsnameClass;
 jclass JniConstants::unixSocketAddressClass;
@@ -110,8 +110,6 @@ void JniConstants::init(JNIEnv* env) {
     integerClass = findClass(env, "java/lang/Integer");
     localeDataClass = findClass(env, "libcore/icu/LocaleData");
     longClass = findClass(env, "java/lang/Long");
-    mutableIntClass = findClass(env, "android/util/MutableInt");
-    mutableLongClass = findClass(env, "android/util/MutableLong");
     netlinkSocketAddressClass = findClass(env, "android/system/NetlinkSocketAddress");
     packetSocketAddressClass = findClass(env, "android/system/PacketSocketAddress");
     patternSyntaxExceptionClass = findClass(env, "java/util/regex/PatternSyntaxException");
@@ -121,7 +119,6 @@ void JniConstants::init(JNIEnv* env) {
     structAddrinfoClass = findClass(env, "android/system/StructAddrinfo");
     structFlockClass = findClass(env, "android/system/StructFlock");
     structGroupReqClass = findClass(env, "android/system/StructGroupReq");
-    structGroupSourceReqClass = findClass(env, "android/system/StructGroupSourceReq");
     structIfaddrs = findClass(env, "android/system/StructIfaddrs");
     structLingerClass = findClass(env, "android/system/StructLinger");
     structPasswdClass = findClass(env, "android/system/StructPasswd");
@@ -129,10 +126,20 @@ void JniConstants::init(JNIEnv* env) {
     structStatClass = findClass(env, "android/system/StructStat");
     structStatVfsClass = findClass(env, "android/system/StructStatVfs");
     structTimevalClass = findClass(env, "android/system/StructTimeval");
+    structTimespecClass = findClass(env, "android/system/StructTimespec");
     structUcredClass = findClass(env, "android/system/StructUcred");
     structUtsnameClass = findClass(env, "android/system/StructUtsname");
     unixSocketAddressClass = findClass(env, "android/system/UnixSocketAddress");
     zipEntryClass = findClass(env, "java/util/zip/ZipEntry");
 
     g_constants_initialized = true;
+}
+
+namespace android {
+
+void ClearJniConstantsCache() {
+    g_constants_initialized = false;
+    ClearJNIHelpLocalCache();
+}
+
 }
