@@ -34,7 +34,7 @@ constexpr char nativehelper::detail::jni_type_trait<jtype>::type_name[];
 DEFINE_JNI_TYPE_TRAIT(STORAGE_FN_FOR_JNI_TRAITS)
 
 template <typename T>
-auto stringify_helper(const T& val) -> decltype(std::stringstream().str()) {  // suppress incorrect warnings about compiler not support 'auto'
+std::string stringify_helper(const T& val) {
   std::stringstream ss;
   ss << val;
   return ss.str();
@@ -73,6 +73,27 @@ TEST(JniSafeRegisterNativeMethods, StringParsing) {
     auto parse = ParseSingleTypeDescriptor("[I");
     EXPECT_EQ("[I", parse->token);
     EXPECT_EQ("", parse->remainder);
+  }
+
+  {
+    auto parse = ParseSingleTypeDescriptor("LObject;");
+    EXPECT_EQ("LObject;", parse->token);
+    EXPECT_EQ("", parse->remainder);
+  }
+
+  {
+    auto parse = ParseSingleTypeDescriptor("LBadObject);");
+    EXPECT_FALSE(parse.has_value());
+  }
+
+  {
+    auto parse = ParseSingleTypeDescriptor("LBadObject(;");
+    EXPECT_FALSE(parse.has_value());
+  }
+
+  {
+    auto parse = ParseSingleTypeDescriptor("LBadObject[;");
+    EXPECT_FALSE(parse.has_value());
   }
 
   // Stringify is used for convenience to make writing out tests easier.
@@ -114,12 +135,8 @@ TEST(JniSafeRegisterNativeMethods, StringParsing) {
   EXPECT_OK_SIGNATURE_PARSE("()F", /*args*/"", /*ret*/"F");
   EXPECT_OK_SIGNATURE_PARSE("()J", /*args*/"", /*ret*/"J");
   EXPECT_OK_SIGNATURE_PARSE("()D", /*args*/"", /*ret*/"D");
-  EXPECT_OK_SIGNATURE_PARSE("()Ljava/lang/Object;", /*args*/
-                            "", /*ret*/
-                            "Ljava/lang/Object;");
-  EXPECT_OK_SIGNATURE_PARSE("()[Ljava/lang/Object;", /*args*/
-                            "", /*ret*/
-                            "[Ljava/lang/Object;");
+  EXPECT_OK_SIGNATURE_PARSE("()Ljava/lang/Object;", /*args*/"", /*ret*/"Ljava/lang/Object;");
+  EXPECT_OK_SIGNATURE_PARSE("()[Ljava/lang/Object;", /*args*/"", /*ret*/"[Ljava/lang/Object;");
   EXPECT_OK_SIGNATURE_PARSE("()[I", /*args*/"", /*ret*/"[I");
   EXPECT_OK_SIGNATURE_PARSE("()[[I", /*args*/"", /*ret*/"[[I");
   EXPECT_OK_SIGNATURE_PARSE("()[[[I", /*args*/"", /*ret*/"[[[I");
@@ -143,15 +160,15 @@ TEST(JniSafeRegisterNativeMethods, StringParsing) {
 
   EXPECT_OK_SIGNATURE_PARSE("(ZIJ)V", /*args*/"Z,I,J", /*ret*/"V");
   EXPECT_OK_SIGNATURE_PARSE("(B[IJ)V", /*args*/"B,[I,J", /*ret*/"V");
-  EXPECT_OK_SIGNATURE_PARSE("(Ljava/lang/Object;B)D", /*args*/
-                            "Ljava/lang/Object;,B", /*ret*/
-                            "D");
-  EXPECT_OK_SIGNATURE_PARSE("(Ljava/lang/Object;Ljava/lang/String;IF)D", /*args*/
-                            "Ljava/lang/Object;,Ljava/lang/String;,I,F", /*ret*/
-                            "D");
-  EXPECT_OK_SIGNATURE_PARSE("([[[Ljava/lang/Object;Ljava/lang/String;IF)D", /*args*/
-                            "[[[Ljava/lang/Object;,Ljava/lang/String;,I,F", /*ret*/
-                            "D");
+  EXPECT_OK_SIGNATURE_PARSE("(Ljava/lang/Object;B)D",
+                            /*args*/"Ljava/lang/Object;,B",
+                            /*ret*/"D");
+  EXPECT_OK_SIGNATURE_PARSE("(Ljava/lang/Object;Ljava/lang/String;IF)D",
+                            /*args*/"Ljava/lang/Object;,Ljava/lang/String;,I,F",
+                            /*ret*/"D");
+  EXPECT_OK_SIGNATURE_PARSE("([[[Ljava/lang/Object;Ljava/lang/String;IF)D",
+                            /*args*/"[[[Ljava/lang/Object;,Ljava/lang/String;,I,F",
+                            /*ret*/"D");
 
   /*
    * Test Failures in Parsing
@@ -257,6 +274,8 @@ struct TestJni {
   static jint int_fn() { return 0; }
 
   static void v_() {}
+  // Note: volatile,const don't participate in the function signature
+  // but we still have these here to clarify that it is indeed allowed.
   static void v_vol_i(volatile jint) {}
   static void v_const_i(const jint) {}
   static void v_i(jint) {}
@@ -360,7 +379,8 @@ TEST(JniSafeRegisterNativeMethods, FunctionTypes) {
   // The exact error messages are not tested but they would be seen in the compiler
   // stack trace when used from a constexpr context.
 
-#define IS_VALID_JNI_FUNCTION_TYPE(native_kind, func) (IsValidJniFunctionType<native_kind, decltype(func), (func)>())
+#define IS_VALID_JNI_FUNCTION_TYPE(native_kind, func) \
+    (IsValidJniFunctionType<native_kind, decltype(func), (func)>())
 #define IS_VALID_NORMAL_JNI_FUNCTION_TYPE(func) IS_VALID_JNI_FUNCTION_TYPE(kNormalNative, func)
 #define IS_VALID_CRITICAL_JNI_FUNCTION_TYPE(func) IS_VALID_JNI_FUNCTION_TYPE(kCriticalNative, func)
 
@@ -368,12 +388,6 @@ TEST(JniSafeRegisterNativeMethods, FunctionTypes) {
     do {                                                            \
        EXPECT_FALSE(IS_VALID_CRITICAL_JNI_FUNCTION_TYPE(func));    \
        EXPECT_FALSE(IS_VALID_NORMAL_JNI_FUNCTION_TYPE(func));      \
-    } while (false)
-
-#define EXPECT_EITHER_JNI_FUNCTION_TYPE(func)                       \
-    do {                                                            \
-       EXPECT_TRUE(IS_VALID_CRITICAL_JNI_FUNCTION_TYPE(func));     \
-       EXPECT_TRUE(IS_VALID_NORMAL_JNI_FUNCTION_TYPE(func));       \
     } while (false)
 
 #define EXPECT_NORMAL_JNI_FUNCTION_TYPE(func)                       \
@@ -472,7 +486,7 @@ TEST(JniSafeRegisterNativeMethods, FunctionTypeDescriptorConversion) {
     constexpr auto cvrt = MaybeMakeReifiedJniSignature<kCriticalNative,
                                                        decltype(TestJni::v_i),
                                                        TestJni::v_i>();
-    EXPECT_TRUE(cvrt.has_value());
+    ASSERT_TRUE(cvrt.has_value());
     EXPECT_CONSTEXPR_EQ(2u, cvrt->max_size);
     EXPECT_CONSTEXPR_EQ(1u, cvrt->args.size());
     EXPECT_STRINGIFY_EQ("args={jint}, ret=void", cvrt.value());
@@ -489,7 +503,7 @@ TEST(JniSafeRegisterNativeMethods, FunctionTypeDescriptorConversion) {
     constexpr auto cvrt = MaybeMakeReifiedJniSignature<kNormalNative,
                                                        decltype(TestJni::normal_agi),
                                                        TestJni::normal_agi>();
-    EXPECT_TRUE(cvrt.has_value());
+    ASSERT_TRUE(cvrt.has_value());
     EXPECT_EQ(2u, cvrt->args.size());
     EXPECT_STRINGIFY_EQ("args={jdoubleArray,jobject}, ret=jdoubleArray", cvrt.value());
   }
@@ -498,7 +512,7 @@ TEST(JniSafeRegisterNativeMethods, FunctionTypeDescriptorConversion) {
     constexpr auto cvrt = MaybeMakeReifiedJniSignature<kCriticalNative,
                                                        decltype(TestJni::critical_ac2),
                                                        TestJni::critical_ac2>();
-    EXPECT_TRUE(cvrt.has_value());
+    ASSERT_TRUE(cvrt.has_value());
     EXPECT_EQ(2u, cvrt->args.size());
     EXPECT_STRINGIFY_EQ("args={jshort,jchar}, ret=jshort", cvrt.value());
   }
@@ -521,7 +535,8 @@ struct apply_return_type {
 
 TEST(JniSafeRegisterNativeMethods, FunctionTraits) {
   using namespace nativehelper::detail;
-  using traits_for_int_ret = FunctionTypeMetafunction<FN_ARGS_PAIR(test_function_traits::int_returning_function)>;
+  using traits_for_int_ret =
+      FunctionTypeMetafunction<FN_ARGS_PAIR(test_function_traits::int_returning_function)>;
   int applied = traits_for_int_ret::map_return<apply_return_type>();
   EXPECT_EQ(1, applied);
 
@@ -562,6 +577,17 @@ constexpr auto make_test_int_vector() {
   return vec_int;
 }
 
+TEST(JniSafeRegisterNativeMethods, ConstexprOptional) {
+  using namespace nativehelper::detail;
+
+  ConstexprOptional<int> int_opt;
+  EXPECT_FALSE(int_opt.has_value());
+
+  int_opt = ConstexprOptional<int>(12345);
+  EXPECT_EQ(12345, int_opt.value());
+  EXPECT_EQ(12345, *int_opt);
+}
+
 TEST(JniSafeRegisterNativeMethods, ConstexprVector) {
   using namespace nativehelper::detail;
   {
@@ -584,11 +610,14 @@ constexpr nativehelper::detail::JniDescriptorNode MakeNode(
   return nativehelper::detail::JniDescriptorNode{str};
 }
 
-#define EXPECT_EQUALISH_JNI_DESCRIPTORS_IMPL(user_desc, derived, cond) \
-  do { \
-    constexpr bool res = CompareJniDescriptorNodeErased(MakeNode(user_desc), ReifiedJniTypeTrait::Reify<derived>()); \
-    (void)res; \
-    EXPECT_ ## cond(CompareJniDescriptorNodeErased(MakeNode(user_desc), ReifiedJniTypeTrait::Reify<derived>())); \
+#define EXPECT_EQUALISH_JNI_DESCRIPTORS_IMPL(user_desc, derived, cond)                      \
+  do {                                                                                      \
+    constexpr bool res =                                                                    \
+        CompareJniDescriptorNodeErased(MakeNode(user_desc),                                 \
+                                       ReifiedJniTypeTrait::Reify<derived>());              \
+    (void)res;                                                                              \
+    EXPECT_ ## cond(CompareJniDescriptorNodeErased(MakeNode(user_desc),                     \
+                                                   ReifiedJniTypeTrait::Reify<derived>())); \
   } while (0);
 
 #define EXPECT_EQUALISH_JNI_DESCRIPTORS(user_desc, derived_desc) \
@@ -641,15 +670,15 @@ TEST(JniSafeRegisterNativeMethods, CompareJniDescriptorNodeErased) {
   EXPECT_EQUALISH_JNI_DESCRIPTORS("Ljava/lang/Error;", jthrowable);
 }
 
-#define EXPECT_SIMILAR_TYPE_DESCRIPTOR_MATCH(type_desc, type) \
-  do { \
-    constexpr auto res = ReifiedJniTypeTrait::MostSimilarTypeDescriptor(type_desc); \
-    EXPECT_TRUE((ReifiedJniTypeTrait::MostSimilarTypeDescriptor(type_desc)).has_value());\
-    if (res.has_value()) EXPECT_EQ(ReifiedJniTypeTrait::Reify<type>(), res.value());  \
+#define EXPECT_SIMILAR_TYPE_DESCRIPTOR_MATCH(type_desc, type)                             \
+  do {                                                                                    \
+    constexpr auto res = ReifiedJniTypeTrait::MostSimilarTypeDescriptor(type_desc);       \
+    EXPECT_TRUE((ReifiedJniTypeTrait::MostSimilarTypeDescriptor(type_desc)).has_value()); \
+    if (res.has_value()) EXPECT_EQ(ReifiedJniTypeTrait::Reify<type>(), res.value());      \
   } while (false)
 
-#define EXPECT_SIMILAR_TYPE_DESCRIPTOR_NO_MATCH(type_desc) \
-  do { \
+#define EXPECT_SIMILAR_TYPE_DESCRIPTOR_NO_MATCH(type_desc)                \
+  do {                                                                    \
     auto res = ReifiedJniTypeTrait::MostSimilarTypeDescriptor(type_desc); \
     EXPECT_FALSE(res.has_value());                                        \
   } while (false)
@@ -657,7 +686,7 @@ TEST(JniSafeRegisterNativeMethods, CompareJniDescriptorNodeErased) {
 #define JNI_TYPE_TRAIT_MUST_BE_SAME_FN(type_name, type_desc, ...)              \
   /* skip jarray because it aliases Ljava/lang/Object; */                      \
   do {                                                                         \
-    constexpr auto str_type_name = ConstexprStringView(#type_name);          \
+    constexpr auto str_type_name = ConstexprStringView(#type_name);            \
     if (str_type_name != "jarray" && str_type_name != "JNIEnv*") {             \
       EXPECT_SIMILAR_TYPE_DESCRIPTOR_MATCH(type_desc, type_name);              \
     }                                                                          \
@@ -720,11 +749,15 @@ TEST(JniSafeRegisterNativeMethods, MatchJniDescriptorWithFunctionType) {
 
   // Argument types don't match.
   EXPECT_NO_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kCriticalNative, TestJni::v_i, "(Z)V");
-  EXPECT_NO_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kNormalNative, TestJni::v_eoo, "(Ljava/lang/Class;)V");
+  EXPECT_NO_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kNormalNative,
+                                                  TestJni::v_eoo,
+                                                  "(Ljava/lang/Class;)V");
 
   // OK.
   EXPECT_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kCriticalNative, TestJni::v_i, "(I)V");
-  EXPECT_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kNormalNative, TestJni::v_eoo, "(Ljava/lang/Object;)V");
+  EXPECT_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kNormalNative,
+                                               TestJni::v_eoo,
+                                               "(Ljava/lang/Object;)V");
 
   EXPECT_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kCriticalNative, TestJni::v_lib, "(JIZ)V");
   EXPECT_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kNormalNative, TestJni::v_eolib, "(JIZ)V");
