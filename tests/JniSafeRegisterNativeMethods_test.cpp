@@ -43,7 +43,7 @@ std::string stringify_helper(const T& val) {
 #define EXPECT_STRINGIFY_EQ(x, y) EXPECT_EQ(stringify_helper(x), stringify_helper(y))
 
 TEST(JniSafeRegisterNativeMethods, StringParsing) {
-  using namespace nativehelper::detail;                                \
+  using namespace nativehelper::detail;  // NOLINT
 
   // Super basic bring-up tests for core functionality.
 
@@ -218,7 +218,7 @@ TEST(JniSafeRegisterNativeMethods, StringParsing) {
 // Basic smoke tests for parameter validity.
 // See below for more exhaustive tests.
 TEST(JniSafeRegisterNativeMethods, ParameterTypes) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   EXPECT_TRUE(IsJniParameterCountValid(kCriticalNative, 0u));
   EXPECT_TRUE(IsJniParameterCountValid(kCriticalNative, 1u));
   EXPECT_TRUE(IsJniParameterCountValid(kCriticalNative, 2u));
@@ -240,7 +240,7 @@ TEST(JniSafeRegisterNativeMethods, ParameterTypes) {
 
 struct TestReturnAnything {
   template <typename T>
-  operator T() const {
+  operator T() const {  // NOLINT
     return T{};
   }
 };
@@ -375,7 +375,7 @@ struct TestJni {
 // Template parameters must have linkage, which function-local structs lack.
 
 TEST(JniSafeRegisterNativeMethods, FunctionTypes) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   // The exact error messages are not tested but they would be seen in the compiler
   // stack trace when used from a constexpr context.
 
@@ -481,7 +481,7 @@ TEST(JniSafeRegisterNativeMethods, FunctionTypes) {
  }
 
 TEST(JniSafeRegisterNativeMethods, FunctionTypeDescriptorConversion) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   {
     constexpr auto cvrt = MaybeMakeReifiedJniSignature<kCriticalNative,
                                                        decltype(TestJni::v_i),
@@ -534,7 +534,7 @@ struct apply_return_type {
 #define FN_ARGS_PAIR(fn) decltype(fn), (fn)
 
 TEST(JniSafeRegisterNativeMethods, FunctionTraits) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   using traits_for_int_ret =
       FunctionTypeMetafunction<FN_ARGS_PAIR(test_function_traits::int_returning_function)>;
   int applied = traits_for_int_ret::map_return<apply_return_type>();
@@ -567,7 +567,7 @@ constexpr size_t SumUpVector(const nativehelper::detail::ConstexprVector<T, kMax
 
 template <typename T>
 constexpr auto make_test_int_vector() {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   ConstexprVector<T, 5> vec_int;
   vec_int.push_back(T{1});
   vec_int.push_back(T{2});
@@ -578,7 +578,7 @@ constexpr auto make_test_int_vector() {
 }
 
 TEST(JniSafeRegisterNativeMethods, ConstexprOptional) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
 
   ConstexprOptional<int> int_opt;
   EXPECT_FALSE(int_opt.has_value());
@@ -589,7 +589,7 @@ TEST(JniSafeRegisterNativeMethods, ConstexprOptional) {
 }
 
 TEST(JniSafeRegisterNativeMethods, ConstexprVector) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   {
     constexpr ConstexprVector<IntHolder, 5> vec_int = make_test_int_vector<IntHolder>();
     constexpr size_t the_sum = SumUpVector(vec_int);
@@ -627,7 +627,7 @@ constexpr nativehelper::detail::JniDescriptorNode MakeNode(
   EXPECT_EQUALISH_JNI_DESCRIPTORS_IMPL(user_desc, derived_desc, FALSE)
 
 TEST(JniSafeRegisterNativeMethods, CompareJniDescriptorNodeErased) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   EXPECT_EQUALISH_JNI_DESCRIPTORS("V", void);
   EXPECT_NOT_EQUALISH_JNI_DESCRIPTORS("V", jint);
   EXPECT_EQUALISH_JNI_DESCRIPTORS("Z", jboolean);
@@ -693,7 +693,7 @@ TEST(JniSafeRegisterNativeMethods, CompareJniDescriptorNodeErased) {
   } while(false);
 
 TEST(JniSafeRegisterNativeMethods, MostSimilarTypeDescriptor) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   EXPECT_SIMILAR_TYPE_DESCRIPTOR_MATCH("Z", jboolean);
   EXPECT_SIMILAR_TYPE_DESCRIPTOR_MATCH("[[I", jobjectArray);
   EXPECT_SIMILAR_TYPE_DESCRIPTOR_MATCH("[[Z", jobjectArray);
@@ -730,7 +730,7 @@ TEST(JniSafeRegisterNativeMethods, MostSimilarTypeDescriptor) {
     EXPECT_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION_IMPL(FALSE, native_kind, func, desc)
 
 TEST(JniSafeRegisterNativeMethods, MatchJniDescriptorWithFunctionType) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   // Bad C++ signature.
   EXPECT_NO_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kCriticalNative, TestJni::bad_cptr, "()V");
   EXPECT_NO_MATCH_JNI_DESCRIPTOR_AGAINST_FUNCTION(kNormalNative, TestJni::bad_cptr, "()V");
@@ -766,7 +766,7 @@ TEST(JniSafeRegisterNativeMethods, MatchJniDescriptorWithFunctionType) {
 }
 
 TEST(JniSafeRegisterNativeMethods, Infer) {
-  using namespace nativehelper::detail;
+  using namespace nativehelper::detail;  // NOLINT
   {
     using Infer_v_eolib_t = InferJniDescriptor<kNormalNative,
                                                decltype(TestJni::v_eolib),
