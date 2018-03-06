@@ -252,7 +252,7 @@
         (name),                                                    \
         (sig),                                                     \
         _NATIVEHELPER_JNI_MACRO_CAST(reinterpret_cast, void *)(fn) \
-    }                                                             \
+    }                                                              \
   )
 
 // C++14 or better, use compile-time checking.
