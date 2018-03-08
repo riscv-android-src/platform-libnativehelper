@@ -272,8 +272,7 @@ struct ConstexprVector {
 struct JniDescriptorNode {
   ConstexprStringView longy;
 
-  constexpr JniDescriptorNode(ConstexprStringView longy)
-      : longy(longy) {  // NOLINT: explicit.
+  constexpr JniDescriptorNode(ConstexprStringView longy) : longy(longy) {  // NOLINT(google-explicit-constructor)
     X_ASSERT(!longy.empty());
   }
   constexpr JniDescriptorNode() : longy() {}
@@ -305,7 +304,7 @@ struct ConstexprOptional {
   }
 
   // Create an optional with a value.
-  constexpr ConstexprOptional(const T& value)
+  constexpr ConstexprOptional(const T& value)  // NOLINT(google-explicit-constructor)
       : _has_value(true), _value(value) {
   }
 
@@ -368,7 +367,7 @@ inline std::ostream& operator<<(std::ostream& os, const ConstexprOptional<T>& va
 // Mostly useful for macros that need to return an empty constexpr optional.
 struct NullConstexprOptional {
   template<typename T>
-  constexpr operator ConstexprOptional<T>() const {
+  constexpr operator ConstexprOptional<T>() const {  // NOLINT(google-explicit-constructor)
     return ConstexprOptional<T>();
   }
 };
@@ -1409,7 +1408,7 @@ struct InferJniDescriptor {
 // Expression to return JNINativeMethod, performs checking on signature+fn.
 #define MAKE_CHECKED_JNI_NATIVE_METHOD(native_kind, name_, signature_, fn) \
   ([]() {                                                                \
-    using namespace nativehelper::detail;                                \
+    using namespace nativehelper::detail;  /* NOLINT(google-build-using-namespace) */ \
     static_assert(                                                       \
         MatchJniDescriptorWithFunctionType<native_kind,                  \
                                            decltype(fn),                 \
@@ -1420,13 +1419,13 @@ struct InferJniDescriptor {
     return JNINativeMethod {                                             \
         const_cast<decltype(JNINativeMethod::name)>(name_),              \
         const_cast<decltype(JNINativeMethod::signature)>(signature_),    \
-        reinterpret_cast<void*>(&fn)};                                   \
+        reinterpret_cast<void*>(&(fn))};                                 \
   })()
 
 // Expression to return JNINativeMethod, infers signature from fn.
 #define MAKE_INFERRED_JNI_NATIVE_METHOD(native_kind, name_, fn)          \
   ([]() {                                                                \
-    using namespace nativehelper::detail;                                \
+    using namespace nativehelper::detail;  /* NOLINT(google-build-using-namespace) */ \
     /* Suppress implicit cast warnings by explicitly casting. */         \
     return JNINativeMethod {                                             \
         const_cast<decltype(JNINativeMethod::name)>(name_),              \
@@ -1434,7 +1433,7 @@ struct InferJniDescriptor {
             InferJniDescriptor<native_kind,                              \
                                decltype(fn),                             \
                                fn>::GetStringAtRuntime()),               \
-        reinterpret_cast<void*>(&fn)};                                   \
+        reinterpret_cast<void*>(&(fn))};                                 \
   })()
 
 }  // namespace detail
