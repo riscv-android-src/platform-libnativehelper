@@ -23,7 +23,7 @@
 #include <cstddef>
 
 #define LOG_TAG "JniInvocation"
-#include "cutils/log.h"
+#include <log/log.h>
 
 #ifdef __ANDROID__
 #include <sys/system_properties.h>
