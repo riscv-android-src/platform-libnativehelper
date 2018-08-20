@@ -94,7 +94,8 @@ jobject jniCreateFileDescriptor(C_JNIEnv* env, int fd);
 int jniGetFDFromFileDescriptor(C_JNIEnv* env, jobject fileDescriptor);
 
 /*
- * Sets the int fd in a java.io.FileDescriptor.
+ * Sets the int fd in a java.io.FileDescriptor.  Throws java.lang.NullPointerException
+ * if fileDescriptor is null.
  */
 void jniSetFileDescriptorOfFD(C_JNIEnv* env, jobject fileDescriptor, int value);
 
