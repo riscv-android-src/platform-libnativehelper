@@ -20,6 +20,12 @@
 #include <cstdlib> // For NULL.
 #include "JNIHelp.h"  // For DISALLOW_COPY_AND_ASSIGN.
 
+//
+// DEPRECATED
+//
+// New code should use std::unique_ptr from <memory> instead.
+//
+
 // Default deleter for pointer types.
 template <typename T>
 struct DefaultDelete {
@@ -28,7 +34,7 @@ struct DefaultDelete {
     void operator()(T* p) const {
         delete p;
     }
-};
+} __attribute__((deprecated));
 
 // Default deleter for array types.
 template <typename T>
@@ -37,7 +43,7 @@ struct DefaultDelete<T[]> {
     void operator()(T* p) const {
         delete[] p;
     }
-};
+} __attribute__((deprecated));
 
 // A smart pointer that deletes the given pointer on destruction.
 // Equivalent to C++0x's std::unique_ptr (a combination of boost::scoped_ptr
@@ -90,7 +96,7 @@ private:
     template <typename T2> bool operator!=(const UniquePtr<T2>& p) const;
 
     DISALLOW_COPY_AND_ASSIGN(UniquePtr);
-};
+} __attribute__((deprecated));
 
 // Partial specialization for array types. Like std::unique_ptr, this removes
 // operator* and operator-> but adds operator[].
@@ -126,7 +132,7 @@ private:
     T* mPtr;
 
     DISALLOW_COPY_AND_ASSIGN(UniquePtr);
-};
+} __attribute__((deprecated));
 
 #if UNIQUE_PTR_TESTS
 
