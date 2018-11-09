@@ -361,21 +361,13 @@ void jniLogException(C_JNIEnv* env, int priority, const char* tag, jthrowable ex
 // select the correct jniStrError implementation based on the libc being used.
 namespace impl {
 
-template<typename StrerrorReturn>
-inline static const char* realJniStrError(StrerrorReturn func,
-                                          int errnum,
-                                          char* buf,
-                                          size_t buflen);
-
 using GNUStrError = char* (*)(int,char*,size_t);
 using POSIXStrError = int (*)(int,char*,size_t);
 
-template<>
 inline const char* realJniStrError(GNUStrError func, int errnum, char* buf, size_t buflen) {
     return func(errnum, buf, buflen);
 }
 
-template<>
 inline const char* realJniStrError(POSIXStrError func, int errnum, char* buf, size_t buflen) {
     int rc = func(errnum, buf, buflen);
     if (rc != 0) {
@@ -386,10 +378,11 @@ inline const char* realJniStrError(POSIXStrError func, int errnum, char* buf, si
     }
     return buf;
 }
+
 }  // namespace impl
 
 const char* jniStrError(int errnum, char* buf, size_t buflen) {
-  // The magic of C++ templates selects the correct implementation based on the declared type of
+  // The magic of C++ overloading selects the correct implementation based on the declared type of
   // strerror_r. The inline will ensure that we don't have any indirect calls.
   return impl::realJniStrError(strerror_r, errnum, buf, buflen);
 }
