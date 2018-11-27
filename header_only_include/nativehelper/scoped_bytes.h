@@ -42,6 +42,7 @@ public:
             } else {
                 mPtr = reinterpret_cast<jbyte*>(mEnv->GetDirectBufferAddress(mObject));
             }
+            mEnv->DeleteLocalRef(byteArrayClass);
         }
     }
 
