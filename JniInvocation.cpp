@@ -29,6 +29,8 @@
 #include <sys/system_properties.h>
 #endif
 
+#include "JniConstants.h"
+
 template <typename T>
 void UNUSED(const T&) {}
 
@@ -198,6 +200,10 @@ extern "C" jint JNI_GetDefaultJavaVMInitArgs(void* vm_args) {
 }
 
 extern "C" jint JNI_CreateJavaVM(JavaVM** p_vm, JNIEnv** p_env, void* vm_args) {
+  // Ensure any cached heap objects from previous VM instances are
+  // invalidated. There is no notification here that a VM is destroyed. These
+  // cached objects limit us to one VM instance per process.
+  JniConstants::Uninitialize();
   return JniInvocation::GetJniInvocation().JNI_CreateJavaVM(p_vm, p_env, vm_args);
 }
 
