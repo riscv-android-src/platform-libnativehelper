@@ -37,8 +37,8 @@ cc_library {
     srcs: [
         "JNIHelp.cpp",
         "JniConstants.cpp",
-        "toStringArray.cpp",
         "JniInvocation.cpp",
+        "toStringArray.cpp",
     ],
 
     target: {

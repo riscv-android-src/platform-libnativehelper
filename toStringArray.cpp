@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-#include <nativehelper/JniConstants.h>
 #include <nativehelper/toStringArray.h>
 
+#include "JniConstants.h"
+
 jobjectArray newStringArray(JNIEnv* env, size_t count) {
-    return env->NewObjectArray(count, JniConstants::stringClass, NULL);
+    return env->NewObjectArray(count, JniConstants::GetStringClass(env), nullptr);
 }
 
 struct ArrayCounter {
@@ -26,7 +27,7 @@ struct ArrayCounter {
     explicit ArrayCounter(const char* const* strings) : strings(strings) {}
     size_t operator()() {
         size_t count = 0;
-        while (strings[count] != NULL) {
+        while (strings[count] != nullptr) {
             ++count;
         }
         return count;
