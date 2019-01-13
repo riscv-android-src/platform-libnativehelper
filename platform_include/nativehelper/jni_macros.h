@@ -204,10 +204,6 @@
 // The Java Language code must be annotated with one of (none,@FastNative,@CriticalNative)
 // for the (none,FAST_,CRITICAL_) variants of these macros.
 
-#ifdef NATIVE_METHOD  // Remove definition from JniConstants.h
-#undef NATIVE_METHOD
-#endif
-
 #define NATIVE_METHOD(className, functionName, signature)                \
   MAKE_JNI_NATIVE_METHOD(#functionName, signature, className ## _ ## functionName)
 
