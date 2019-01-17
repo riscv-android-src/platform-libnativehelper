@@ -60,3 +60,12 @@ cc_test {
 
   shared_libs: ["libnativehelper"],
 }
+
+cc_test {
+  name: "libnativehelper_api_test",
+  host_supported: true,
+  cflags: ["-Wall", "-Werror"],
+  srcs: ["libnativehelper_api_test.c"],  // C Compilation test.
+  tidy: true,
+  shared_libs: ["libnativehelper"],
+}

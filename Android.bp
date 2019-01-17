@@ -31,8 +31,8 @@ cc_library_headers {
     export_include_dirs: ["platform_include"],
 }
 
-cc_library {
-    name: "libnativehelper",
+cc_defaults {
+    name: "libnativehelper_defaults",
     host_supported: true,
     srcs: [
         "JNIHelp.cpp",
@@ -40,24 +40,11 @@ cc_library {
         "JniInvocation.cpp",
         "toStringArray.cpp",
     ],
-
     target: {
         linux: {
             srcs: ["AsynchronousCloseMonitor.cpp"],
         },
     },
-
-    header_libs: [
-        "jni_headers",
-        "libnativehelper_header_only",
-        "jni_platform_headers"
-    ],
-    export_header_lib_headers: [
-        "jni_headers",
-        "libnativehelper_header_only",
-        "jni_platform_headers",
-    ],
-
     shared_libs: [
         "liblog",
     ],
@@ -65,8 +52,20 @@ cc_library {
         "-Werror",
         "-fvisibility=protected",
     ],
+    export_include_dirs: [
+         "include",
+         "header_only_include",
+         "platform_include"
+    ],
+}
 
-    export_include_dirs: ["include"],
+cc_library {
+    name: "libnativehelper",
+    defaults: [ "libnativehelper_defaults" ],
+    stubs: {
+       symbol_file: "libnativehelper.map.txt",
+       versions: ["1"],
+    },
 }
 
 //
