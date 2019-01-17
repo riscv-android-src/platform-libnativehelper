@@ -19,6 +19,17 @@
 
 #include <pthread.h>
 
+#include "module_api.h"
+
+// Public API for library function.
+MODULE_API void async_close_monitor_destroy(void* instance);
+MODULE_API void async_close_monitor_static_init();
+MODULE_API void async_close_monitor_signal_blocked_threads(int fd);
+MODULE_API int async_close_monitor_was_signalled(const void* instance);
+MODULE_API void* async_close_monitor_create(int fd);
+
+#ifdef __cplusplus
+
 /**
  * AsynchronousCloseMonitor helps implement Java's asynchronous close semantics.
  *
@@ -42,24 +53,31 @@
  */
 class AsynchronousCloseMonitor {
 public:
-    explicit AsynchronousCloseMonitor(int fd);
-    ~AsynchronousCloseMonitor();
-    bool wasSignaled() const;
+    explicit AsynchronousCloseMonitor(int fd) {
+        instance_ = async_close_monitor_create(fd);
+    }
+    ~AsynchronousCloseMonitor() {
+        async_close_monitor_destroy(instance_);
+    }
+    bool wasSignaled() const {
+        return async_close_monitor_was_signalled(instance_) != 0;
+    }
 
-    static void init();
+    static void init() {
+        async_close_monitor_static_init();
+    }
 
-    static void signalBlockedThreads(int fd);
+    static void signalBlockedThreads(int fd) {
+        async_close_monitor_signal_blocked_threads(fd);
+    }
 
 private:
-    AsynchronousCloseMonitor* mPrev;
-    AsynchronousCloseMonitor* mNext;
-    pthread_t mThread;
-    int mFd;
-    bool mSignaled;
+    AsynchronousCloseMonitor(const AsynchronousCloseMonitor&) = delete;
+    AsynchronousCloseMonitor& operator=(const AsynchronousCloseMonitor&) = delete;
 
-    // Disallow copy and assignment.
-    AsynchronousCloseMonitor(const AsynchronousCloseMonitor&);
-    void operator=(const AsynchronousCloseMonitor&);
+    void* instance_;
 };
+
+#endif  // __cplusplus
 
 #endif  // ASYNCHRONOUS_CLOSE_MONITOR_H_included
