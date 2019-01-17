@@ -26,6 +26,29 @@
 
 #include <mutex>
 
+namespace {
+
+class AsynchronousCloseMonitorImpl {
+public:
+    explicit AsynchronousCloseMonitorImpl(int fd);
+    ~AsynchronousCloseMonitorImpl();
+    bool wasSignaled() const;
+
+    static void init();
+
+    static void signalBlockedThreads(int fd);
+
+private:
+    AsynchronousCloseMonitorImpl(const AsynchronousCloseMonitorImpl&) = delete;
+    AsynchronousCloseMonitorImpl& operator=(const AsynchronousCloseMonitorImpl&) = delete;
+
+    AsynchronousCloseMonitorImpl* mPrev;
+    AsynchronousCloseMonitorImpl* mNext;
+    pthread_t mThread;
+    int mFd;
+    bool mSignaled;
+};
+
 /**
  * We use an intrusive doubly-linked list to keep track of blocked threads.
  * This gives us O(1) insertion and removal, and means we don't need to do any allocation.
@@ -35,7 +58,7 @@
  * question). For now at least, this seems like a good compromise for Android.
  */
 static std::mutex blockedThreadListMutex;
-static AsynchronousCloseMonitor* blockedThreadList = NULL;
+static AsynchronousCloseMonitorImpl* blockedThreadList = NULL;
 
 /**
  * The specific signal chosen here is arbitrary, but bionic needs to know so that SIGRTMIN
@@ -47,7 +70,7 @@ static void blockedThreadSignalHandler(int /*signal*/) {
     // Do nothing. We only sent this signal for its side-effect of interrupting syscalls.
 }
 
-void AsynchronousCloseMonitor::init() {
+void AsynchronousCloseMonitorImpl::init() {
     // Ensure that the signal we send interrupts system calls but doesn't kill threads.
     // Using sigaction(2) lets us ensure that the SA_RESTART flag is not set.
     // (The whole reason we're sending this signal is to unblock system calls!)
@@ -61,9 +84,9 @@ void AsynchronousCloseMonitor::init() {
     }
 }
 
-void AsynchronousCloseMonitor::signalBlockedThreads(int fd) {
+void AsynchronousCloseMonitorImpl::signalBlockedThreads(int fd) {
     std::lock_guard<std::mutex> lock(blockedThreadListMutex);
-    for (AsynchronousCloseMonitor* it = blockedThreadList; it != NULL; it = it->mNext) {
+    for (AsynchronousCloseMonitorImpl* it = blockedThreadList; it != NULL; it = it->mNext) {
         if (it->mFd == fd) {
             it->mSignaled = true;
             pthread_kill(it->mThread, BLOCKED_THREAD_SIGNAL);
@@ -72,11 +95,11 @@ void AsynchronousCloseMonitor::signalBlockedThreads(int fd) {
     }
 }
 
-bool AsynchronousCloseMonitor::wasSignaled() const {
+bool AsynchronousCloseMonitorImpl::wasSignaled() const {
     return mSignaled;
 }
 
-AsynchronousCloseMonitor::AsynchronousCloseMonitor(int fd) {
+AsynchronousCloseMonitorImpl::AsynchronousCloseMonitorImpl(int fd) {
     std::lock_guard<std::mutex> lock(blockedThreadListMutex);
     // Who are we, and what are we waiting for?
     mThread = pthread_self();
@@ -91,7 +114,7 @@ AsynchronousCloseMonitor::AsynchronousCloseMonitor(int fd) {
     blockedThreadList = this;
 }
 
-AsynchronousCloseMonitor::~AsynchronousCloseMonitor() {
+AsynchronousCloseMonitorImpl::~AsynchronousCloseMonitorImpl() {
     std::lock_guard<std::mutex> lock(blockedThreadListMutex);
     // Unlink ourselves from the intrusive doubly-linked list...
     if (mNext != NULL) {
@@ -102,4 +125,32 @@ AsynchronousCloseMonitor::~AsynchronousCloseMonitor() {
     } else {
         mPrev->mNext = mNext;
     }
+}
+
+}  // namespace
+
+//
+// C ABI and API boundary
+//
+
+MODULE_API void async_close_monitor_static_init() {
+  AsynchronousCloseMonitorImpl::init();
+}
+
+MODULE_API void async_close_monitor_signal_blocked_threads(int fd) {
+  AsynchronousCloseMonitorImpl::signalBlockedThreads(fd);
+}
+
+MODULE_API void* async_close_monitor_create(int fd) {
+  return new AsynchronousCloseMonitorImpl(fd);
+}
+
+MODULE_API void async_close_monitor_destroy(void* instance) {
+  auto monitor = reinterpret_cast<AsynchronousCloseMonitorImpl*>(instance);
+  delete monitor;
+}
+
+MODULE_API int async_close_monitor_was_signalled(const void* instance) {
+  auto monitor = reinterpret_cast<const AsynchronousCloseMonitorImpl*>(instance);
+  return monitor->wasSignaled() ? 1 : 0;
 }
