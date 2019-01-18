@@ -62,10 +62,6 @@ cc_defaults {
 cc_library {
     name: "libnativehelper",
     defaults: [ "libnativehelper_defaults" ],
-    stubs: {
-       symbol_file: "libnativehelper.map.txt",
-       versions: ["1"],
-    },
 }
 
 //
