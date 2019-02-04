@@ -31,8 +31,8 @@ cc_library_headers {
     export_include_dirs: ["platform_include"],
 }
 
-cc_library {
-    name: "libnativehelper",
+cc_defaults {
+    name: "libnativehelper_defaults",
     host_supported: true,
     srcs: [
         "JNIHelp.cpp",
@@ -56,14 +56,15 @@ cc_library {
         "-fvisibility=protected",
     ],
     export_include_dirs: [
-        "include",
-        "header_only_include",
-        "platform_include"
+         "include",
+         "header_only_include",
+         "platform_include"
     ],
-    stubs: {
-        symbol_file: "libnativehelper.map.txt",
-        versions: ["1"],
-    },
+}
+
+cc_library {
+    name: "libnativehelper",
+    defaults: [ "libnativehelper_defaults" ],
 }
 
 //
