@@ -40,14 +40,6 @@ cc_defaults {
         "JniInvocation.cpp",
         "toStringArray.cpp",
     ],
-    target: {
-        linux: {
-            srcs: ["AsynchronousCloseMonitor.cpp"],
-        },
-        fuchsia: {
-            srcs: ["AsynchronousCloseMonitor.cpp"],
-        },
-    },
     shared_libs: [
         "liblog",
     ],
