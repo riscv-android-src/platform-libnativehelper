@@ -6,7 +6,8 @@ cc_test {
     host_supported: true,
     srcs: ["JniInvocation_test.cpp"],
     cflags: ["-Wall", "-Werror"],
-    shared_libs: ["libnativehelper"],
+    // Link tested library statically to bypass stubs.
+    static_libs: ["libnativehelper"],
 }
 
 cc_test {
