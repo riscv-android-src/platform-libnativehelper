@@ -15,7 +15,6 @@
  */
 
 // All header files with MODULE_API decorated function declarations.
-#include "nativehelper/AsynchronousCloseMonitor.h"
 #include "nativehelper/JNIHelp.h"
 #include "nativehelper/JniInvocation.h"
 #include "nativehelper/toStringArray.h"
