@@ -21,6 +21,7 @@ LIBNATIVEHELPER_1 {
     jniGetReferent;
     jniCreateString;
     jniLogException;
+    jniUninitializeConstants;
 
     JniInvocationCreate;
     JniInvocationDestroy;

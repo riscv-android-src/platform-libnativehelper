@@ -377,3 +377,7 @@ MODULE_API jstring jniCreateString(C_JNIEnv* env, const jchar* unicodeChars, jsi
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
     return e->NewString(unicodeChars, len);
 }
+
+MODULE_API void jniUninitializeConstants() {
+  JniConstants::Uninitialize();
+}
