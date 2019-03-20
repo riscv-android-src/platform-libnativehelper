@@ -139,6 +139,11 @@ MODULE_API jstring jniCreateString(C_JNIEnv* env, const jchar* unicodeChars, jsi
 MODULE_API void jniLogException(C_JNIEnv* env, int priority, const char* tag, jthrowable exception);
 
 /*
+ * Clear the cache of constants libnativehelper is using.
+ */
+MODULE_API void jniUninitializeConstants();
+
+/*
  * For C++ code, we provide inlines that map to the C functions.  g++ always
  * inlines these, even on non-optimized builds.
  */
