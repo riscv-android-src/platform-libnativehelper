@@ -17,18 +17,33 @@ cc_library_headers {
     host_supported: true,
     export_include_dirs: ["include_jni"],
     vendor_available: true,
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 cc_library_headers {
     name: "libnativehelper_header_only",
     host_supported: true,
     export_include_dirs: ["header_only_include"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 cc_library_headers {
     name: "jni_platform_headers",
     host_supported: true,
     export_include_dirs: ["platform_include"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 cc_library {
@@ -41,6 +56,7 @@ cc_library {
         "toStringArray.cpp",
     ],
     shared_libs: [
+        "libbase",
         "liblog",
     ],
     cflags: [
@@ -55,6 +71,11 @@ cc_library {
     stubs: {
         symbol_file: "libnativehelper.map.txt",
         versions: ["1"],
+    },
+    target: {
+        windows: {
+            enabled: true,
+        },
     },
 }
 
