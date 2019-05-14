@@ -42,6 +42,8 @@ std::atomic<bool> g_class_refs_initialized(false);
 // retrieve one of these classes.
 
 jclass g_file_descriptor_class = nullptr;  // java.io.FileDescriptor
+jclass g_nio_access_class = nullptr;       // java.nio.Access
+jclass g_nio_buffer_class = nullptr;       // java.nio.Buffer
 jclass g_reference_class = nullptr;        // java.lang.ref.Reference
 jclass g_string_class = nullptr;           // java.lang.String
 
@@ -70,6 +72,14 @@ jclass g_string_class = nullptr;           // java.lang.String
 jfieldID g_file_descriptor_descriptor_field = nullptr;  // java.io.FileDescriptor.descriptor
 jfieldID g_file_descriptor_owner_id_field = nullptr;    // java.io.FileDescriptor.ownerId
 jmethodID g_file_descriptor_init_method = nullptr;      // void java.io.FileDescriptor.<init>()
+jmethodID g_nio_access_get_base_array_method = nullptr;        // Object java.nio.NIOAccess.getBaseArray()
+jmethodID g_nio_access_get_base_array_offset_method = nullptr; // Object java.nio.NIOAccess.getBaseArray()
+jfieldID g_nio_buffer_address_field = nullptr;          // long java.nio.Buffer.address
+jfieldID g_nio_buffer_element_size_shift_field = nullptr; // int java.nio.Buffer._elementSizeShift
+jfieldID g_nio_buffer_limit_field = nullptr;            // int java.nio.Buffer.limit
+jfieldID g_nio_buffer_position_field = nullptr;         // int java.nio.Buffer.position
+jmethodID g_nio_buffer_array_method = nullptr;          // Object java.nio.Buffer.array()
+jmethodID g_nio_buffer_array_offset_method = nullptr;   // int java.nio.Buffer.arrayOffset()
 jmethodID g_reference_get_method = nullptr;             // Object java.lang.ref.Reference.get()
 
 jclass FindClass(JNIEnv* env, const char* name) {
@@ -90,16 +100,32 @@ jmethodID FindMethod(JNIEnv* env, jclass klass, const char* name, const char* si
     return result;
 }
 
-}  // namespace
-
-jclass JniConstants::GetReferenceClass(JNIEnv* env) {
-    EnsureClassReferencesInitialized(env);
-    return g_reference_class;
+jmethodID FindStaticMethod(JNIEnv* env, jclass klass, const char* name, const char* signature) {
+    jmethodID result = env->GetStaticMethodID(klass, name, signature);
+    ALOG_ALWAYS_FATAL_IF(result == nullptr, "failed to find static method '%s%s'", name, signature);
+    return result;
 }
+
+}  // namespace
 
 jclass JniConstants::GetFileDescriptorClass(JNIEnv* env) {
     EnsureClassReferencesInitialized(env);
     return g_file_descriptor_class;
+}
+
+jclass JniConstants::GetNioAccessClass(JNIEnv* env) {
+    EnsureClassReferencesInitialized(env);
+    return g_nio_access_class;
+}
+
+jclass JniConstants::GetNioBufferClass(JNIEnv* env) {
+    EnsureClassReferencesInitialized(env);
+    return g_nio_buffer_class;
+}
+
+jclass JniConstants::GetReferenceClass(JNIEnv* env) {
+    EnsureClassReferencesInitialized(env);
+    return g_reference_class;
 }
 
 jclass JniConstants::GetStringClass(JNIEnv* env) {
@@ -131,6 +157,73 @@ jmethodID JniConstants::GetFileDescriptorInitMethod(JNIEnv* env) {
     return g_file_descriptor_init_method;
 }
 
+jmethodID JniConstants::GetNioAccessGetBaseArrayMethod(JNIEnv* env) {
+    if (g_nio_access_get_base_array_method == nullptr) {
+        jclass klass = GetNioAccessClass(env);
+        g_nio_access_get_base_array_method =
+                FindStaticMethod(env, klass, "getBaseArray",
+                                 "(Ljava/nio/Buffer;)Ljava/lang/Object;");
+    }
+    return g_nio_access_get_base_array_method;
+}
+
+jmethodID JniConstants::GetNioAccessGetBaseArrayOffsetMethod(JNIEnv* env) {
+    if (g_nio_access_get_base_array_offset_method == nullptr) {
+        jclass klass = GetNioAccessClass(env);
+        g_nio_access_get_base_array_offset_method =
+                FindStaticMethod(env, klass, "getBaseArrayOffset", "(Ljava/nio/Buffer;)I");
+    }
+    return g_nio_access_get_base_array_offset_method;
+}
+
+jfieldID JniConstants::GetNioBufferAddressField(JNIEnv* env) {
+    if (g_nio_buffer_address_field == nullptr) {
+        jclass klass = GetNioBufferClass(env);
+        g_nio_buffer_address_field = FindField(env, klass, "address", "J");
+    }
+    return g_nio_buffer_address_field;
+}
+
+jfieldID JniConstants::GetNioBufferElementSizeShiftField(JNIEnv* env) {
+    if (g_nio_buffer_element_size_shift_field == nullptr) {
+        jclass klass = GetNioBufferClass(env);
+        g_nio_buffer_element_size_shift_field = FindField(env, klass, "_elementSizeShift", "I");
+    }
+    return g_nio_buffer_element_size_shift_field;
+}
+
+jfieldID JniConstants::GetNioBufferLimitField(JNIEnv* env) {
+    if (g_nio_buffer_limit_field == nullptr) {
+        jclass klass = GetNioBufferClass(env);
+        g_nio_buffer_limit_field = FindField(env, klass, "limit", "I");
+    }
+    return g_nio_buffer_limit_field;
+}
+
+jfieldID JniConstants::GetNioBufferPositionField(JNIEnv* env) {
+    if (g_nio_buffer_position_field == nullptr) {
+        jclass klass = GetNioBufferClass(env);
+        g_nio_buffer_position_field = FindField(env, klass, "position", "I");
+    }
+    return g_nio_buffer_position_field;
+}
+
+jmethodID JniConstants::GetNioBufferArrayMethod(JNIEnv* env) {
+    if (g_nio_buffer_array_method == nullptr) {
+        jclass klass = GetNioBufferClass(env);
+        g_nio_buffer_array_method = FindMethod(env, klass, "array", "()Ljava/lang/Object;");
+    }
+    return g_nio_buffer_array_method;
+}
+
+jmethodID JniConstants::GetNioBufferArrayOffsetMethod(JNIEnv* env) {
+    if (g_nio_buffer_array_offset_method == nullptr) {
+        jclass klass = GetNioBufferClass(env);
+        g_nio_buffer_array_offset_method = FindMethod(env, klass, "arrayOffset", "()I");
+    }
+    return g_nio_buffer_array_offset_method;
+}
+
 jmethodID JniConstants::GetReferenceGetMethod(JNIEnv* env) {
     if (g_reference_get_method == nullptr) {
         jclass klass = GetReferenceClass(env);
@@ -156,6 +249,8 @@ void JniConstants::EnsureClassReferencesInitialized(JNIEnv* env) {
     // are not references and races only have trivial performance
     // consequences.
     g_file_descriptor_class = FindClass(env, "java/io/FileDescriptor");
+    g_nio_access_class = FindClass(env, "java/nio/NIOAccess");
+    g_nio_buffer_class = FindClass(env, "java/nio/Buffer");
     g_reference_class = FindClass(env, "java/lang/ref/Reference");
     g_string_class = FindClass(env, "java/lang/String");
     g_class_refs_initialized.store(true, std::memory_order_release);
@@ -175,6 +270,16 @@ void JniConstants::Uninitialize() {
     g_file_descriptor_descriptor_field = nullptr;
     g_file_descriptor_owner_id_field = nullptr;
     g_file_descriptor_init_method = nullptr;
+    g_nio_access_class = nullptr;
+    g_nio_access_get_base_array_method = nullptr;
+    g_nio_access_get_base_array_offset_method = nullptr;
+    g_nio_buffer_class = nullptr;
+    g_nio_buffer_address_field = nullptr;
+    g_nio_buffer_element_size_shift_field = nullptr;
+    g_nio_buffer_limit_field = nullptr;
+    g_nio_buffer_position_field = nullptr;
+    g_nio_buffer_array_method = nullptr;
+    g_nio_buffer_array_offset_method = nullptr;
     g_reference_class = nullptr;
     g_reference_get_method = nullptr;
     g_string_class = nullptr;
