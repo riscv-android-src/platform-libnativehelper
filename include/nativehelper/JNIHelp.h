@@ -122,6 +122,48 @@ MODULE_API void jniSetFileDescriptorOfFD(C_JNIEnv* env,
 MODULE_API jlong jniGetOwnerIdFromFileDescriptor(C_JNIEnv* env, jobject fileDescriptor);
 
 /*
+ * Gets the managed heap array backing a java.nio.Buffer instance.
+ *
+ * Returns nullptr if there is no array backing.
+ *
+ * This method performs a JNI call to java.nio.NIOAccess.getBaseArray().
+ */
+MODULE_API jarray jniGetNioBufferBaseArray(C_JNIEnv* env, jobject nioBuffer);
+
+/*
+ * Gets the offset in bytes from the start of the managed heap array backing the buffer.
+ *
+ * Returns 0 if there is no array backing.
+ *
+ * This method performs a JNI call to java.nio.NIOAccess.getBaseArrayOffset().
+ */
+MODULE_API jint jniGetNioBufferBaseArrayOffset(C_JNIEnv* env, jobject nioBuffer);
+
+/*
+ * Gets field information from a java.nio.Buffer instance.
+ *
+ * Reads the |position|, |limit|, and |elementSizeShift| fields from the buffer instance.
+ *
+ * Returns the |address| field of the java.nio.Buffer instance which is only valid (non-zero) when
+ * the buffer is backed by a direct buffer.
+ */
+MODULE_API jlong jniGetNioBufferFields(C_JNIEnv* env,
+                                       jobject nioBuffer,
+                                       /*out*/jint* position,
+                                       /*out*/jint* limit,
+                                       /*out*/jint* elementSizeShift);
+
+/*
+ * Gets the current position from a java.nio.Buffer as a pointer to memory in a fixed buffer.
+ *
+ * Returns 0 if |nioBuffer| is not backed by a direct buffer.
+ *
+ * This method reads the |address|, |position|, and |elementSizeShift| fields from the
+ * java.nio.Buffer instance to calculate the pointer address for the current position.
+ */
+MODULE_API jlong jniGetNioBufferPointer(C_JNIEnv* env, jobject nioBuffer);
+
+/*
  * Returns the reference from a java.lang.ref.Reference.
  */
 MODULE_API jobject jniGetReferent(C_JNIEnv* env, jobject ref);
@@ -194,6 +236,24 @@ inline void jniSetFileDescriptorOfFD(JNIEnv* env, jobject fileDescriptor, int va
 
 inline jlong jniGetOwnerIdFromFileDescriptor(JNIEnv* env, jobject fileDescriptor) {
     return jniGetOwnerIdFromFileDescriptor(&env->functions, fileDescriptor);
+}
+
+inline jarray jniGetNioBufferBaseArray(JNIEnv* env, jobject nioBuffer) {
+    return jniGetNioBufferBaseArray(&env->functions, nioBuffer);
+}
+
+inline jint jniGetNioBufferBaseArrayOffset(JNIEnv* env, jobject nioBuffer) {
+    return jniGetNioBufferBaseArrayOffset(&env->functions, nioBuffer);
+}
+
+inline jlong jniGetNioBufferFields(JNIEnv* env, jobject nioBuffer,
+                                   jint* position, jint* limit, jint* elementSizeShift) {
+    return jniGetNioBufferFields(&env->functions, nioBuffer,
+                                 position, limit, elementSizeShift);
+}
+
+inline jlong jniGetNioBufferPointer(JNIEnv* env, jobject nioBuffer) {
+    return jniGetNioBufferPointer(&env->functions, nioBuffer);
 }
 
 inline jobject jniGetReferent(JNIEnv* env, jobject ref) {
