@@ -355,6 +355,43 @@ MODULE_API jlong jniGetOwnerIdFromFileDescriptor(C_JNIEnv* env, jobject fileDesc
     return e->GetLongField(fileDescriptor, JniConstants::GetFileDescriptorOwnerIdField(e));
 }
 
+MODULE_API jarray jniGetNioBufferBaseArray(C_JNIEnv* env, jobject nioBuffer) {
+    JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
+    jclass nioAccessClass = JniConstants::GetNioAccessClass(e);
+    jmethodID getBaseArrayMethod = JniConstants::GetNioAccessGetBaseArrayMethod(e);
+    jobject object = e->CallStaticObjectMethod(nioAccessClass, getBaseArrayMethod, nioBuffer);
+    return static_cast<jarray>(object);
+}
+
+MODULE_API int jniGetNioBufferBaseArrayOffset(C_JNIEnv* env, jobject nioBuffer) {
+    JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
+    jclass nioAccessClass = JniConstants::GetNioAccessClass(e);
+    jmethodID getBaseArrayOffsetMethod = JniConstants::GetNioAccessGetBaseArrayOffsetMethod(e);
+    return e->CallStaticIntMethod(nioAccessClass, getBaseArrayOffsetMethod, nioBuffer);
+}
+
+MODULE_API jlong jniGetNioBufferPointer(C_JNIEnv* env, jobject nioBuffer) {
+    JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
+    jlong baseAddress = e->GetLongField(nioBuffer, JniConstants::GetNioBufferAddressField(e));
+    if (baseAddress != 0) {
+      const int position = e->GetIntField(nioBuffer, JniConstants::GetNioBufferPositionField(e));
+      const int shift =
+          e->GetIntField(nioBuffer, JniConstants::GetNioBufferElementSizeShiftField(e));
+      baseAddress += position << shift;
+    }
+    return baseAddress;
+}
+
+MODULE_API jlong jniGetNioBufferFields(C_JNIEnv* env, jobject nioBuffer,
+                                       jint* position, jint* limit, jint* elementSizeShift) {
+    JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
+    *position = e->GetIntField(nioBuffer, JniConstants::GetNioBufferPositionField(e));
+    *limit = e->GetIntField(nioBuffer, JniConstants::GetNioBufferLimitField(e));
+    *elementSizeShift =
+        e->GetIntField(nioBuffer, JniConstants::GetNioBufferElementSizeShiftField(e));
+    return e->GetLongField(nioBuffer, JniConstants::GetNioBufferAddressField(e));
+}
+
 MODULE_API jobject jniGetReferent(C_JNIEnv* env, jobject ref) {
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
     return e->CallObjectMethod(ref, JniConstants::GetReferenceGetMethod(e));
