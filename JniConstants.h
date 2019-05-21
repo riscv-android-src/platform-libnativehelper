@@ -31,6 +31,36 @@ struct JniConstants {
     // void java.io.FileDescriptor.<init>().
     static jmethodID GetFileDescriptorInitMethod(JNIEnv* env);
 
+    // Global reference to java.nio.NIOAccess.
+    static jclass GetNioAccessClass(JNIEnv* env);
+
+    // Object java.nio.NIOAccess.getBaseArray(Buffer);
+    static jmethodID GetNioAccessGetBaseArrayMethod(JNIEnv* env);
+
+    // int java.nio.NIOAccess.getBaseArrayOffset(Buffer);
+    static jmethodID GetNioAccessGetBaseArrayOffsetMethod(JNIEnv* env);
+
+    // Global reference to java.nio.Buffer.
+    static jclass GetNioBufferClass(JNIEnv* env);
+
+    // long java.nio.Buffer.address
+    static jfieldID GetNioBufferAddressField(JNIEnv* env);
+
+    // int java.nio.Buffer._elementSizeShift
+    static jfieldID GetNioBufferElementSizeShiftField(JNIEnv* env);
+
+    // int java.nio.Buffer.limit;
+    static jfieldID GetNioBufferLimitField(JNIEnv* env);
+
+    // int java.nio.Buffer.position;
+    static jfieldID GetNioBufferPositionField(JNIEnv* env);
+
+    // Object java.nio.Buffer.array()
+    static jmethodID GetNioBufferArrayMethod(JNIEnv* env);
+
+    // int java.nio.Buffer.arrayOffset()
+    static jmethodID GetNioBufferArrayOffsetMethod(JNIEnv* env);
+
     // Global reference to java.lang.ref.Reference.
     static jclass GetReferenceClass(JNIEnv* env);
 
