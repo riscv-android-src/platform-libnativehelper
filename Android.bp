@@ -22,6 +22,8 @@ cc_library_headers {
             enabled: true,
         },
     },
+    // The minimum sdk version required by users of this module.
+    sdk_version: "minimum",
 }
 
 cc_library_headers {
