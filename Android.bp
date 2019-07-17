@@ -33,6 +33,7 @@ cc_library_headers {
             enabled: true,
         },
     },
+    sdk_version: "current",
 }
 
 cc_library_headers {
@@ -66,7 +67,7 @@ cc_library {
     export_include_dirs: [
         "include",
         "header_only_include",
-        "platform_include"
+        "platform_include",
     ],
     stubs: {
         symbol_file: "libnativehelper.map.txt",
