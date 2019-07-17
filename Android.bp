@@ -93,9 +93,9 @@ cc_library_shared {
         "include",
     ],
     cflags: ["-Werror"],
-    include_dirs: [
-        "libnativehelper/header_only_include",
-        "libnativehelper/platform_include",
+    local_include_dirs: [
+        "header_only_include",
+        "platform_include",
     ],
     srcs: [
         "JNIHelp.cpp",
