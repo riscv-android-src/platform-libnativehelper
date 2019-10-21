@@ -272,29 +272,6 @@ inline void jniLogException(JNIEnv* env, int priority, const char* tag, jthrowab
     jniLogException(&env->functions, priority, tag, exception);
 }
 
-#if !defined(DISALLOW_COPY_AND_ASSIGN)
-// DISALLOW_COPY_AND_ASSIGN disallows the copy and operator= functions. It goes in the private:
-// declarations in a class.
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-  TypeName(const TypeName&) = delete;  \
-  void operator=(const TypeName&) = delete
-#endif  // !defined(DISALLOW_COPY_AND_ASSIGN)
-
 #endif  // defined(__cplusplus)
-
-/*
- * TEMP_FAILURE_RETRY is defined by some, but not all, versions of
- * <unistd.h>. (Alas, it is not as standard as we'd hoped!) So, if it's
- * not already defined, then define it here.
- */
-#ifndef TEMP_FAILURE_RETRY
-/* Used to retry syscalls that can return EINTR. */
-#define TEMP_FAILURE_RETRY(exp) ({         \
-    typeof (exp) _rc;                      \
-    do {                                   \
-        _rc = (exp);                       \
-    } while (_rc == -1 && errno == EINTR); \
-    _rc; })
-#endif
 
 #endif  /* NATIVEHELPER_JNIHELP_H_ */
