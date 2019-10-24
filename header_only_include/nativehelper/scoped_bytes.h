@@ -33,7 +33,7 @@ public:
     : mEnv(env), mObject(object), mByteArray(NULL), mPtr(NULL)
     {
         if (mObject == NULL) {
-            jniThrowNullPointerException(mEnv, NULL);
+            jniThrowNullPointerException(mEnv);
         } else {
             jclass byteArrayClass = env->FindClass("[B");
             if (mEnv->IsInstanceOf(mObject, byteArrayClass)) {

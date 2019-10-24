@@ -34,7 +34,7 @@ class ScopedStringChars {
   ScopedStringChars(JNIEnv* env, jstring s) : env_(env), string_(s), size_(0) {
     if (s == NULL) {
       chars_ = NULL;
-      jniThrowNullPointerException(env, NULL);
+      jniThrowNullPointerException(env);
     } else {
       chars_ = env->GetStringChars(string_, NULL);
       if (chars_ != NULL) {

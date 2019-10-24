@@ -36,7 +36,7 @@ class ScopedUtfChars {
   ScopedUtfChars(JNIEnv* env, jstring s) : env_(env), string_(s) {
     if (s == nullptr) {
       utf_chars_ = nullptr;
-      jniThrowNullPointerException(env, nullptr);
+      jniThrowNullPointerException(env);
     } else {
       utf_chars_ = env->GetStringUTFChars(s, nullptr);
     }
