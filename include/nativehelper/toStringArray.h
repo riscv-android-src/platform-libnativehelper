@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef TO_STRING_ARRAY_H_included
-#define TO_STRING_ARRAY_H_included
+#ifndef LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_TOSTRINGARRAY_H_
+#define LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_TOSTRINGARRAY_H_
 
 #include "libnativehelper_api.h"
 
@@ -68,4 +68,4 @@ inline jobjectArray toStringArray(JNIEnv* env, const std::vector<std::string>& s
 
 #endif  // __cplusplus
 
-#endif  // TO_STRING_ARRAY_H_included
+#endif  // LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_TOSTRINGARRAY_H_

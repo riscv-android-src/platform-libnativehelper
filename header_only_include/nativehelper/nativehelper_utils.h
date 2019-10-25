@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef NATIVEHELPER_MACROS_H_
-#define NATIVEHELPER_MACROS_H_
+#ifndef LIBNATIVEHELPER_HEADER_ONLY_INCLUDE_NATIVEHELPER_NATIVEHELPER_UTILS_H_
+#define LIBNATIVEHELPER_HEADER_ONLY_INCLUDE_NATIVEHELPER_NATIVEHELPER_UTILS_H_
 
 #if defined(__cplusplus)
 
@@ -50,4 +50,4 @@ static inline int jniThrowNullPointerException(JNIEnv* env) {
 
 #endif  // defined(__cplusplus)
 
-#endif  // NATIVEHELPER_MACROS_H_
+#endif  // LIBNATIVEHELPER_HEADER_ONLY_INCLUDE_NATIVEHELPER_NATIVEHELPER_UTILS_H_

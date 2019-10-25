@@ -20,8 +20,8 @@
  * This file may be included by C or C++ code, which is trouble because jni.h
  * uses different typedefs for JNIEnv in each language.
  */
-#ifndef NATIVEHELPER_JNIHELP_H_
-#define NATIVEHELPER_JNIHELP_H_
+#ifndef LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_JNIHELP_H_
+#define LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_JNIHELP_H_
 
 #include <errno.h>
 #include <unistd.h>
@@ -121,4 +121,4 @@ inline void jniLogException(JNIEnv* env, int priority, const char* tag, jthrowab
 
 #endif  // defined(__cplusplus)
 
-#endif  /* NATIVEHELPER_JNIHELP_H_ */
+#endif  // LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_JNIHELP_H_

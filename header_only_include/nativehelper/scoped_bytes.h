@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SCOPED_BYTES_H_
-#define SCOPED_BYTES_H_
+#ifndef LIBNATIVEHELPER_HEADER_ONLY_INCLUDE_NATIVEHELPER_SCOPED_BYTES_H_
+#define LIBNATIVEHELPER_HEADER_ONLY_INCLUDE_NATIVEHELPER_SCOPED_BYTES_H_
 
 #include "jni.h"
 #include "nativehelper_utils.h"
@@ -80,4 +80,4 @@ public:
     }
 };
 
-#endif  // SCOPED_BYTES_H_
+#endif  // LIBNATIVEHELPER_HEADER_ONLY_INCLUDE_NATIVEHELPER_SCOPED_BYTES_H_
