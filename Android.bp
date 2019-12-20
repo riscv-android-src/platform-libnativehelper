@@ -80,6 +80,13 @@ cc_library {
             enabled: true,
         },
     },
+    apex_available: [
+        "com.android.art.release",
+        "com.android.art.debug",
+        // b/133140750 Clean this up. This is due to the dependency from libplatform_library_jni,
+        // librs_jni, libjni_legacymosaic, etc.
+        "//apex_available:platform",
+    ],
 }
 
 //
