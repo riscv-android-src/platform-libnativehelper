@@ -58,10 +58,7 @@ cc_library {
         "JniInvocation.cpp",
         "toStringArray.cpp",
     ],
-    shared_libs: [
-        "libbase",
-        "liblog",
-    ],
+    shared_libs: ["liblog"],
     cflags: [
         "-Werror",
         "-fvisibility=protected",
@@ -77,6 +74,7 @@ cc_library {
     },
     target: {
         windows: {
+            shared_libs: ["libbase"],
             enabled: true,
         },
     },
