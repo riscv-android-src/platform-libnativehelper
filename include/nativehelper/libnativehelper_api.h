@@ -86,14 +86,6 @@ int jniThrowRuntimeException(C_JNIEnv* env, const char* msg);
 int jniThrowIOException(C_JNIEnv* env, int errnum);
 
 /*
- * Return a pointer to a locale-dependent error string explaining errno
- * value 'errnum'. The returned pointer may or may not be equal to 'buf'.
- * This function is thread-safe (unlike strerror) and portable (unlike
- * strerror_r).
- */
-const char* jniStrError(int errnum, char* buf, size_t buflen);
-
-/*
  * Returns a new java.io.FileDescriptor for the given int fd.
  */
 jobject jniCreateFileDescriptor(C_JNIEnv* env, int fd);
@@ -168,6 +160,15 @@ jobject jniGetReferent(C_JNIEnv* env, jobject ref);
 jstring jniCreateString(C_JNIEnv* env, const jchar* unicodeChars, jsize len);
 
 /*
+ * Allocates a new array for java/lang/String instances with space for |count| elements. Elements
+ * are initially null.
+ *
+ * Returns a new array on success or nullptr in case of failure. This method raises an
+ * OutOfMemoryError exception if allocation fails.
+ */
+jobjectArray jniCreateStringArray(C_JNIEnv* env, size_t count);
+
+/*
  * Log a message and an exception.
  * If exception is NULL, logs the current exception in the JNI environment.
  */
@@ -235,26 +236,6 @@ void JniInvocationDestroy(struct JniInvocationImpl* instance);
  * "libart.so".
  */
 const char* JniInvocationGetLibrary(const char* library, char* buffer);
-
-/* ---------------------------------- C API for toStringArray.h --------------------------------- */
-
-/*
- * Allocates a new array for java/lang/String instances with space for |count| elements. Elements
- * are initially null.
- *
- * Returns a new array on success or nullptr in case of failure. This method raises an
- * OutOfMemoryError exception if allocation fails.
- */
-jobjectArray newStringArray(JNIEnv* env, size_t count);
-
-/*
- * Converts an array of C strings into a managed array of Java strings. The size of the C array is
- * determined by the presence of a final element containing a nullptr.
- *
- * Returns a new array on success or nullptr in case of failure. This method raises an
- * OutOfMemoryError exception if allocation fails.
- */
-jobjectArray toStringArray(JNIEnv* env, const char* const* strings);
 
 #ifdef __cplusplus
 }
