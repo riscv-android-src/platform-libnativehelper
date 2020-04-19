@@ -142,7 +142,7 @@ struct JniInvocationImpl* JniInvocationCreate() {
   return &g_impl;
 }
 
-bool JniInvocationInitialize(struct JniInvocationImpl* instance, const char* library_name) {
+bool JniInvocationInit(struct JniInvocationImpl* instance, const char* library_name) {
 #ifdef __ANDROID__
   char buffer[PROP_VALUE_MAX];
 #else

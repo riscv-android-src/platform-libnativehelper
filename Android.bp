@@ -73,7 +73,7 @@ cc_library {
     srcs: [
         "DlHelp.c",
         "JNIHelp.cpp",
-        "JniConstants.cpp",
+        "JniConstants.c",
         "JniInvocation.c",
     ],
     shared_libs: ["liblog"],
@@ -130,7 +130,7 @@ cc_library_shared {
     srcs: [
         "DlHelp.c",
         "JNIHelp.cpp",
-        "JniConstants.cpp",
+        "JniConstants.c",
     ],
     shared_libs: [
         "liblog",

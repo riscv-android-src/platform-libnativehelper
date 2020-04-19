@@ -38,7 +38,7 @@ namespace {
 bool getExceptionSummary(JNIEnv* e, jthrowable exception, std::string& result) {
     // Get the name of the exception's class.
     ScopedLocalRef<jclass> exceptionClass(e, e->GetObjectClass(exception)); // can't fail
-    ScopedLocalRef<jclass> classClass(e,      e->GetObjectClass(exceptionClass.get())); // j.l.Class, can't fail
+    ScopedLocalRef<jclass> classClass(e, e->GetObjectClass(exceptionClass.get())); // j.l.Class, can't fail
     jmethodID classGetNameMethod = e->GetMethodID( classClass.get(), "getName",
                                                    "()Ljava/lang/String;");
     ScopedLocalRef<jstring> classNameStr(e,
@@ -279,8 +279,8 @@ void jniLogException(C_JNIEnv* env, int priority, const char* tag, jthrowable ex
 
 jobject jniCreateFileDescriptor(C_JNIEnv* env, int fd) {
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
-    jobject fileDescriptor = e->NewObject(JniConstants::GetFileDescriptorClass(e),
-                                          JniConstants::GetFileDescriptorInitMethod(e));
+    jobject fileDescriptor = e->NewObject(JniConstants_FileDescriptorClass(e),
+                                          JniConstants_FileDescriptor_init(e));
     // NOTE: NewObject ensures that an OutOfMemoryError will be seen by the Java
     // caller if the alloc fails, so we just return nullptr when that happens.
     if (fileDescriptor != nullptr)  {
@@ -292,8 +292,7 @@ jobject jniCreateFileDescriptor(C_JNIEnv* env, int fd) {
 int jniGetFDFromFileDescriptor(C_JNIEnv* env, jobject fileDescriptor) {
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
     if (fileDescriptor != nullptr) {
-        return e->GetIntField(fileDescriptor,
-                              JniConstants::GetFileDescriptorDescriptorField(e));
+        return e->GetIntField(fileDescriptor, JniConstants_FileDescriptor_descriptor(e));
     } else {
         return -1;
     }
@@ -304,32 +303,32 @@ void jniSetFileDescriptorOfFD(C_JNIEnv* env, jobject fileDescriptor, int value) 
     if (fileDescriptor == nullptr) {
         jniThrowNullPointerException(e, "null FileDescriptor");
     } else {
-        e->SetIntField(fileDescriptor, JniConstants::GetFileDescriptorDescriptorField(e), value);
+        e->SetIntField(fileDescriptor, JniConstants_FileDescriptor_descriptor(e), value);
     }
 }
 
 jarray jniGetNioBufferBaseArray(C_JNIEnv* env, jobject nioBuffer) {
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
-    jclass nioAccessClass = JniConstants::GetNioAccessClass(e);
-    jmethodID getBaseArrayMethod = JniConstants::GetNioAccessGetBaseArrayMethod(e);
+    jclass nioAccessClass = JniConstants_NIOAccessClass(e);
+    jmethodID getBaseArrayMethod = JniConstants_NIOAccess_getBaseArray(e);
     jobject object = e->CallStaticObjectMethod(nioAccessClass, getBaseArrayMethod, nioBuffer);
     return static_cast<jarray>(object);
 }
 
 int jniGetNioBufferBaseArrayOffset(C_JNIEnv* env, jobject nioBuffer) {
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
-    jclass nioAccessClass = JniConstants::GetNioAccessClass(e);
-    jmethodID getBaseArrayOffsetMethod = JniConstants::GetNioAccessGetBaseArrayOffsetMethod(e);
+    jclass nioAccessClass = JniConstants_NIOAccessClass(e);
+    jmethodID getBaseArrayOffsetMethod = JniConstants_NIOAccess_getBaseArrayOffset(e);
     return e->CallStaticIntMethod(nioAccessClass, getBaseArrayOffsetMethod, nioBuffer);
 }
 
 jlong jniGetNioBufferPointer(C_JNIEnv* env, jobject nioBuffer) {
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
-    jlong baseAddress = e->GetLongField(nioBuffer, JniConstants::GetNioBufferAddressField(e));
+    jlong baseAddress = e->GetLongField(nioBuffer, JniConstants_NioBuffer_address(e));
     if (baseAddress != 0) {
-      const int position = e->GetIntField(nioBuffer, JniConstants::GetNioBufferPositionField(e));
+      const int position = e->GetIntField(nioBuffer, JniConstants_NioBuffer_position(e));
       const int shift =
-          e->GetIntField(nioBuffer, JniConstants::GetNioBufferElementSizeShiftField(e));
+          e->GetIntField(nioBuffer, JniConstants_NioBuffer__elementSizeShift(e));
       baseAddress += position << shift;
     }
     return baseAddress;
@@ -338,16 +337,16 @@ jlong jniGetNioBufferPointer(C_JNIEnv* env, jobject nioBuffer) {
 jlong jniGetNioBufferFields(C_JNIEnv* env, jobject nioBuffer,
                             jint* position, jint* limit, jint* elementSizeShift) {
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
-    *position = e->GetIntField(nioBuffer, JniConstants::GetNioBufferPositionField(e));
-    *limit = e->GetIntField(nioBuffer, JniConstants::GetNioBufferLimitField(e));
+    *position = e->GetIntField(nioBuffer, JniConstants_NioBuffer_position(e));
+    *limit = e->GetIntField(nioBuffer, JniConstants_NioBuffer_limit(e));
     *elementSizeShift =
-        e->GetIntField(nioBuffer, JniConstants::GetNioBufferElementSizeShiftField(e));
-    return e->GetLongField(nioBuffer, JniConstants::GetNioBufferAddressField(e));
+        e->GetIntField(nioBuffer, JniConstants_NioBuffer__elementSizeShift(e));
+    return e->GetLongField(nioBuffer, JniConstants_NioBuffer_address(e));
 }
 
 jobject jniGetReferent(C_JNIEnv* env, jobject ref) {
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
-    return e->CallObjectMethod(ref, JniConstants::GetReferenceGetMethod(e));
+    return e->CallObjectMethod(ref, JniConstants_Reference_get(e));
 }
 
 jstring jniCreateString(C_JNIEnv* env, const jchar* unicodeChars, jsize len) {
@@ -357,9 +356,5 @@ jstring jniCreateString(C_JNIEnv* env, const jchar* unicodeChars, jsize len) {
 
 jobjectArray jniCreateStringArray(C_JNIEnv* env, size_t count) {
     JNIEnv* e = reinterpret_cast<JNIEnv*>(env);
-    return e->NewObjectArray(count, JniConstants::GetStringClass(e), nullptr);
-}
-
-void jniUninitializeConstants() {
-  JniConstants::Uninitialize();
+    return e->NewObjectArray(count, JniConstants_StringClass(e), nullptr);
 }

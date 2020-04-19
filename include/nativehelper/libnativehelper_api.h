@@ -17,6 +17,7 @@
 #ifndef LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_LIBNATIVEHELPER_API_H_
 #define LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_LIBNATIVEHELPER_API_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #include "jni.h"
@@ -205,9 +206,9 @@ struct JniInvocationImpl* JniInvocationCreate();
  * If the fallback library cannot be opened or the expected symbols are not found in the library
  * opened, then an error message is written to the Android log buffer and the function returns 0.
  *
- * Returns 1 on success, 0 otherwise.
+ * Returns true on success, false otherwise.
  */
-int JniInvocationInit(struct JniInvocationImpl* instance, const char* library);
+bool JniInvocationInit(struct JniInvocationImpl* instance, const char* library);
 
 /*
  * Release resources associated with JniInvocationImpl instance.
