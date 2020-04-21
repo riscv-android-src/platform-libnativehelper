@@ -33,6 +33,7 @@
 #include <android-base/errors.h>
 #endif
 
+#include "DlHelp.h"
 #include "JniConstants.h"
 
 namespace {
@@ -64,43 +65,6 @@ int GetLibrarySystemProperty(char* buffer) {
 #else
 #define FUNC_POINTER void*
 #endif
-
-void* OpenLibrary(const char* filename) {
-#ifdef _WIN32
-  return LoadLibrary(filename);
-#else
-  // Load with RTLD_NODELETE in order to ensure that libart.so is not unmapped when it is closed.
-  // This is due to the fact that it is possible that some threads might have yet to finish
-  // exiting even after JNI_DeleteJavaVM returns, which can lead to segfaults if the library is
-  // unloaded.
-  const int kDlopenFlags = RTLD_NOW | RTLD_NODELETE;
-  return dlopen(filename, kDlopenFlags);
-#endif
-}
-
-int CloseLibrary(void* handle) {
-#ifdef _WIN32
-  return FreeLibrary(static_cast<HMODULE>(handle));
-#else
-  return dlclose(handle);
-#endif
-}
-
-FUNC_POINTER GetSymbol(void* handle, const char* symbol) {
-#ifdef _WIN32
-  return GetProcAddress(static_cast<HMODULE>(handle), symbol);
-#else
-  return dlsym(handle, symbol);
-#endif
-}
-
-std::string GetError() {
-#ifdef _WIN32
-  return android::base::SystemErrorCodeToString(GetLastError());
-#else
-  return std::string(dlerror());
-#endif
-}
 
 }  // namespace
 
@@ -158,7 +122,7 @@ JniInvocationImpl::JniInvocationImpl() :
 JniInvocationImpl::~JniInvocationImpl() {
   jni_invocation_ = NULL;
   if (handle_ != NULL) {
-    CloseLibrary(handle_);
+    DlCloseLibrary(handle_);
   }
 }
 
@@ -213,11 +177,11 @@ bool JniInvocationImpl::Init(const char* library) {
   char* buffer = NULL;
 #endif
   library = GetLibrary(library, buffer);
-  handle_ = OpenLibrary(library);
+  handle_ = DlOpenLibrary(library);
   if (handle_ == NULL) {
     if (strcmp(library, kLibraryFallback) == 0) {
       // Nothing else to try.
-      ALOGE("Failed to dlopen %s: %s", library, GetError().c_str());
+      ALOGE("Failed to dlopen %s: %s", library, DlGetError());
       return false;
     }
     // Note that this is enough to get something like the zygote
@@ -226,11 +190,11 @@ bool JniInvocationImpl::Init(const char* library) {
     // RuntimeInit.commonInit for where we fix up the property to
     // avoid future fallbacks. http://b/11463182
     ALOGW("Falling back from %s to %s after dlopen error: %s",
-          library, kLibraryFallback, GetError().c_str());
+          library, kLibraryFallback, DlGetError());
     library = kLibraryFallback;
-    handle_ = OpenLibrary(library);
+    handle_ = DlOpenLibrary(library);
     if (handle_ == NULL) {
-      ALOGE("Failed to dlopen %s: %s", library, GetError().c_str());
+      ALOGE("Failed to dlopen %s: %s", library, DlGetError());
       return false;
     }
   }
@@ -262,10 +226,10 @@ jint JniInvocationImpl::JNI_GetCreatedJavaVMs(JavaVM** vms, jsize size, jsize* v
 }
 
 bool JniInvocationImpl::FindSymbol(FUNC_POINTER* pointer, const char* symbol) {
-  *pointer = GetSymbol(handle_, symbol);
+  *pointer = reinterpret_cast<FUNC_POINTER>(DlGetSymbol(handle_, symbol));
   if (*pointer == NULL) {
-    ALOGE("Failed to find symbol %s: %s\n", symbol, GetError().c_str());
-    CloseLibrary(handle_);
+    ALOGE("Failed to find symbol %s: %s\n", symbol, DlGetError());
+    DlCloseLibrary(handle_);
     handle_ = NULL;
     return false;
   }

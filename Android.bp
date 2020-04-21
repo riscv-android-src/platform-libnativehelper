@@ -71,6 +71,7 @@ cc_library {
     name: "libnativehelper",
     host_supported: true,
     srcs: [
+        "DlHelp.c",
         "JNIHelp.cpp",
         "JniConstants.cpp",
         "JniInvocation.cpp",
@@ -128,6 +129,7 @@ cc_library_shared {
         "platform_include",
     ],
     srcs: [
+        "DlHelp.c",
         "JNIHelp.cpp",
         "JniConstants.cpp",
     ],
