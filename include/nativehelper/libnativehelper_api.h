@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_LIBNATIVEHELPER_API_H_
-#define LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_LIBNATIVEHELPER_API_H_
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -237,4 +236,3 @@ const char* JniInvocationGetLibrary(const char* library, char* buffer);
 }
 #endif  // __cplusplus
 
-#endif  // LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_LIBNATIVEHELPER_API_H_

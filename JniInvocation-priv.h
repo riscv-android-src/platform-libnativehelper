@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef LIBNATIVEHELPER_JNIINVOCATION_PRIV_H_
-#define LIBNATIVEHELPER_JNIINVOCATION_PRIV_H_
+#pragma once
 
 #include <sys/cdefs.h>
 
@@ -27,4 +26,3 @@ const char* JniInvocationGetLibraryWith(const char* library, char* buffer,
 
 __END_DECLS
 
-#endif  // LIBNATIVEHELPER_JNIINVOCATION_PRIV_H_
