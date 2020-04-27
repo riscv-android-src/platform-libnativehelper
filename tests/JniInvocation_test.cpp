@@ -20,82 +20,34 @@
 
 #include "string.h"
 
-// Local definition for PROPERTY_VALUE_MAX.
-// NB Only used to create buffer of expected size, buffer not written to outside of this tests.
-static const size_t kPropertyValueMax = 92;
-
+static const char* kDefaultJniInvocationLibrary = "libart.so";
 static const char* kTestNonNull = "libartd.so";
 static const char* kTestNonNull2 = "libartd2.so";
-static const char* kExpected = "libart.so";
-
-static int IsDebuggableAlways() {
-    return 1;
-}
-
-static int IsDebuggableNever() {
-    return 0;
-}
-
-static int GetPropertyForTest(char* buffer) {
-    strcpy(buffer, kTestNonNull2);
-    return strlen(buffer);
-}
 
 TEST(JNIInvocation, Debuggable) {
-    // On Android, when debuggable property is true, the invocation library can be
-    // overridden.
-#ifdef __ANDROID__
-    char buffer[kPropertyValueMax];
-    const char* result =
-        JniInvocationGetLibraryWith(nullptr, buffer, IsDebuggableAlways, GetPropertyForTest);
+    const char* result = JniInvocationGetLibraryWith(nullptr, true, kTestNonNull2);
     EXPECT_STREQ(result, kTestNonNull2);
 
-    result =
-        JniInvocationGetLibraryWith(kTestNonNull, buffer, IsDebuggableAlways, GetPropertyForTest);
+    result = JniInvocationGetLibraryWith(kTestNonNull, true, kTestNonNull2);
     EXPECT_STREQ(result, kTestNonNull);
-#else  // __ANDROID__
-    // On host, the invocation can always be overridden. The arguments |buffer|,
-    // |is_debuggable| and |get_library_system_property| are ignored by JniInvocationGetLibraryWith.
-    const char* result =
-        JniInvocationGetLibraryWith(nullptr, nullptr, IsDebuggableAlways, GetPropertyForTest);
-    EXPECT_STREQ(result, kExpected);
-    result =
-        JniInvocationGetLibraryWith(kTestNonNull, nullptr, IsDebuggableAlways, GetPropertyForTest);
+
+    result = JniInvocationGetLibraryWith(kTestNonNull, true, nullptr);
     EXPECT_STREQ(result, kTestNonNull);
-#endif  // __ANDROID__
+
+    result = JniInvocationGetLibraryWith(nullptr, true, nullptr);
+    EXPECT_STREQ(result, kDefaultJniInvocationLibrary);
 }
 
 TEST(JNIInvocation, NonDebuggable) {
-#ifdef __ANDROID__
-    // On Android, when debuggable property is false, the invocation library provided is
-    // irrelevant, the default "libart.so" is always used.
-    char buffer[kPropertyValueMax];
-    const char* result = JniInvocationGetLibraryWith(nullptr, buffer, IsDebuggableNever, nullptr);
-    EXPECT_STREQ(result, kExpected);
+    const char* result = JniInvocationGetLibraryWith(nullptr, false, kTestNonNull2);
+    EXPECT_STREQ(result, kDefaultJniInvocationLibrary);
 
-    result = JniInvocationGetLibraryWith(kTestNonNull, buffer, IsDebuggableNever, nullptr);
-    EXPECT_STREQ(result, kExpected);
+    result = JniInvocationGetLibraryWith(kTestNonNull, false, kTestNonNull2);
+    EXPECT_STREQ(result, kDefaultJniInvocationLibrary);
 
-    result = JniInvocationGetLibraryWith(nullptr, buffer, IsDebuggableNever, GetPropertyForTest);
-    EXPECT_STREQ(result, kExpected);
+    result = JniInvocationGetLibraryWith(kTestNonNull, false, nullptr);
+    EXPECT_STREQ(result, kDefaultJniInvocationLibrary);
 
-    result =
-        JniInvocationGetLibraryWith(kTestNonNull, buffer, IsDebuggableNever, GetPropertyForTest);
-    EXPECT_STREQ(result, kExpected);
-#else  // __ANDROID__
-    // Host does not have a debuggable property, the invocation library can always be overridden.
-    char buffer[kPropertyValueMax];
-    const char* result = JniInvocationGetLibraryWith(nullptr, buffer, IsDebuggableNever, nullptr);
-    EXPECT_STREQ(result, kExpected);
-
-    result = JniInvocationGetLibraryWith(kTestNonNull, buffer, IsDebuggableNever, nullptr);
-    EXPECT_STREQ(result, kTestNonNull);
-
-    result = JniInvocationGetLibraryWith(nullptr, buffer, IsDebuggableNever, GetPropertyForTest);
-    EXPECT_STREQ(result, kExpected);
-
-    result =
-        JniInvocationGetLibraryWith(kTestNonNull, buffer, IsDebuggableNever, GetPropertyForTest);
-    EXPECT_STREQ(result, kTestNonNull);
-#endif  // __ANDROID__
+    result = JniInvocationGetLibraryWith(nullptr, false, nullptr);
+    EXPECT_STREQ(result, kDefaultJniInvocationLibrary);
 }
