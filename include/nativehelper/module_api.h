@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#ifndef SCOPED_LOCAL_REF_H_included
-#define SCOPED_LOCAL_REF_H_included
+#pragma once
 
-#include "JNIHelp.h"
-#include <nativehelper/scoped_local_ref.h>
-
-#endif  // SCOPED_LOCAL_REF_H_included
+#ifdef __cplusplus
+#define MODULE_API extern "C"
+#else
+#define MODULE_API
+#endif  // __cplusplus

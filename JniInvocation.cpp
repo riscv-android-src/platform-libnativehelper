@@ -112,6 +112,8 @@ struct JniInvocationImpl final {
 
   bool Init(const char* library);
 
+  //  static const char* GetLibrary(const char* library, char* buffer);
+
   static const char* GetLibrary(const char* library,
                                 char* buffer,
                                 bool (*is_debuggable)() = IsDebuggable,
@@ -279,11 +281,11 @@ JniInvocationImpl& JniInvocationImpl::GetJniInvocation() {
   return *jni_invocation_;
 }
 
-jint JNI_GetDefaultJavaVMInitArgs(void* vm_args) {
+MODULE_API jint JNI_GetDefaultJavaVMInitArgs(void* vm_args) {
   return JniInvocationImpl::GetJniInvocation().JNI_GetDefaultJavaVMInitArgs(vm_args);
 }
 
-jint JNI_CreateJavaVM(JavaVM** p_vm, JNIEnv** p_env, void* vm_args) {
+MODULE_API jint JNI_CreateJavaVM(JavaVM** p_vm, JNIEnv** p_env, void* vm_args) {
   // Ensure any cached heap objects from previous VM instances are
   // invalidated. There is no notification here that a VM is destroyed. These
   // cached objects limit us to one VM instance per process.
@@ -291,29 +293,29 @@ jint JNI_CreateJavaVM(JavaVM** p_vm, JNIEnv** p_env, void* vm_args) {
   return JniInvocationImpl::GetJniInvocation().JNI_CreateJavaVM(p_vm, p_env, vm_args);
 }
 
-jint JNI_GetCreatedJavaVMs(JavaVM** vms, jsize size, jsize* vm_count) {
+MODULE_API jint JNI_GetCreatedJavaVMs(JavaVM** vms, jsize size, jsize* vm_count) {
   return JniInvocationImpl::GetJniInvocation().JNI_GetCreatedJavaVMs(vms, size, vm_count);
 }
 
-const char* JniInvocation::GetLibrary(const char* library,
-                                      char* buffer,
-                                      bool (*is_debuggable)(),
-                                      int (*get_library_system_property)(char* buffer)) {
-  return JniInvocationImpl::GetLibrary(library, buffer, is_debuggable, get_library_system_property);
-}
-
-JniInvocationImpl* JniInvocationCreate() {
+MODULE_API JniInvocationImpl* JniInvocationCreate() {
   return new JniInvocationImpl();
 }
 
-void JniInvocationDestroy(JniInvocationImpl* instance) {
+MODULE_API void JniInvocationDestroy(JniInvocationImpl* instance) {
   delete instance;
 }
 
-int JniInvocationInit(JniInvocationImpl* instance, const char* library) {
+MODULE_API int JniInvocationInit(JniInvocationImpl* instance, const char* library) {
   return instance->Init(library) ? 1 : 0;
 }
 
-const char* JniInvocationGetLibrary(const char* library, char* buffer) {
+MODULE_API const char* JniInvocationGetLibrary(const char* library, char* buffer) {
   return JniInvocationImpl::GetLibrary(library, buffer);
+}
+
+MODULE_API const char* JniInvocation::GetLibrary(const char* library,
+                                                 char* buffer,
+                                                 bool (*is_debuggable)(),
+                                                 int (*get_library_system_property)(char* buffer)) {
+  return JniInvocationImpl::GetLibrary(library, buffer, is_debuggable, get_library_system_property);
 }

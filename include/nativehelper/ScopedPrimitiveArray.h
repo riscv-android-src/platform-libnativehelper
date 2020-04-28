@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#ifndef LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_SCOPEDPRIMITIVEARRAY_H_
-#define LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_SCOPEDPRIMITIVEARRAY_H_
+#ifndef SCOPED_PRIMITIVE_ARRAY_H_included
+#define SCOPED_PRIMITIVE_ARRAY_H_included
 
 #include "JNIHelp.h"
 #include <nativehelper/scoped_primitive_array.h>
 
-#endif  // LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_SCOPEDPRIMITIVEARRAY_H_
+#endif  // SCOPED_PRIMITIVE_ARRAY_H_included

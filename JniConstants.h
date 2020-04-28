@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef LIBNATIVEHELPER_JNICONSTANTS_H_
-#define LIBNATIVEHELPER_JNICONSTANTS_H_
+#pragma once
 
 #include "jni.h"
 
@@ -82,5 +81,3 @@ struct JniConstants {
     // one reason why there is a limit of VM instance per process.
     static void Uninitialize();
 };
-
-#endif  // LIBNATIVEHELPER_JNICONSTANTS_H_
