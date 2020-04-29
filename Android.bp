@@ -24,6 +24,8 @@ cc_library_headers {
     },
     // The minimum sdk version required by users of this module.
     sdk_version: "minimum",
+    // As part of mainline modules(APEX), it should support at least 29(Q)
+    min_sdk_version: "29",
 }
 
 cc_library_headers {
@@ -36,6 +38,8 @@ cc_library_headers {
         },
     },
     sdk_version: "current",
+    // As part of mainline modules(APEX), it should support at least 29(Q)
+    min_sdk_version: "29",
 }
 
 cc_library_headers {
