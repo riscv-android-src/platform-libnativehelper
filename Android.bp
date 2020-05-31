@@ -43,8 +43,7 @@ cc_library_headers {
 
     apex_available: [
         "//apex_available:platform",
-        "com.android.art.debug",
-        "com.android.art.release",
+        "//apex_available:anyapex",
     ],
 }
 
@@ -94,6 +93,7 @@ cc_library {
             enabled: true,
         },
     },
+    // Please avoid adding APEX dependencies on this for R (b/157711673).
     apex_available: [
         "com.android.art.release",
         "com.android.art.debug",
