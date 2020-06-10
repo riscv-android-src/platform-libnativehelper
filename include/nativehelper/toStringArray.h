@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_TOSTRINGARRAY_H_
-#define LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_TOSTRINGARRAY_H_
+#pragma once
 
 #include "libnativehelper_api.h"
 
@@ -27,7 +26,8 @@
 
 template <typename StringVisitor>
 jobjectArray toStringArray(JNIEnv* env, size_t count, StringVisitor&& visitor) {
-    jobjectArray result = jniCreateStringArray(static_cast<C_JNIEnv*>(&env->functions), count);
+    C_JNIEnv* c_env = static_cast<C_JNIEnv*>(&env->functions);
+    ScopedLocalRef<jobjectArray> result(env, jniCreateStringArray(c_env, count));
     if (result == nullptr) {
         return nullptr;
     }
@@ -36,12 +36,12 @@ jobjectArray toStringArray(JNIEnv* env, size_t count, StringVisitor&& visitor) {
         if (env->ExceptionCheck()) {
             return nullptr;
         }
-        env->SetObjectArrayElement(result, i, s.get());
+        env->SetObjectArrayElement(result.get(), i, s.get());
         if (env->ExceptionCheck()) {
             return nullptr;
         }
     }
-    return result;
+    return result.release();
 }
 
 inline jobjectArray toStringArray(JNIEnv* env, const std::vector<std::string>& strings) {
@@ -61,4 +61,3 @@ jobjectArray toStringArray(JNIEnv* env, Counter* counter, Getter* getter) {
 
 #endif  // __cplusplus
 
-#endif  // LIBNATIVEHELPER_INCLUDE_NATIVEHELPER_TOSTRINGARRAY_H_
