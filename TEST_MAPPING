@@ -2,6 +2,12 @@
   "presubmit": [
     {
       "name": "libnativehelper_tests"
+    },
+    {
+      "name": "MtsLibnativehelperTestCases"
+    },
+    {
+      "name": "CtsLibnativehelperTestCases"
     }
   ]
 }
