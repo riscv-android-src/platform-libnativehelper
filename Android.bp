@@ -12,12 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package {
+    default_applicable_licenses: ["libnativehelper_license"],
+}
+
+// Added automatically by a large-scale-change
+// http://go/android-license-faq
+license {
+    name: "libnativehelper_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-Apache-2.0",
+    ],
+    license_text: [
+        "NOTICE",
+    ],
+}
+
 cc_defaults {
     name: "libnativehelper_defaults",
     cflags: [
         "-fvisibility=protected",
         "-std=c11",
     ],
+    shared_libs: ["liblog"],
 }
 
 cc_library_headers {
@@ -82,6 +100,7 @@ cc_library_headers {
 cc_library_shared {
     name: "libnativehelper",
     defaults: ["libnativehelper_defaults"],
+    bootstrap: false,
     host_supported: true,
     srcs: [
         "DlHelp.c",
@@ -91,7 +110,6 @@ cc_library_shared {
         "JniConstants.c",
         "JniInvocation.c",
     ],
-    shared_libs: ["liblog"],
     export_include_dirs: [
         "header_only_include",
         "include",
@@ -115,6 +133,30 @@ cc_library_shared {
         "com.android.art",
         "com.android.art.debug",
     ],
+}
+
+// Lazy loading version of libnativehelper that can be used by code
+// that is running before the ART APEX is mounted and
+// libnativehelper.so is available.
+cc_library_static {
+    name: "libnativehelper_lazy",
+    defaults: ["libnativehelper_defaults"],
+    bootstrap: true,
+    host_supported: true,
+    export_include_dirs: [
+        "header_only_include",
+        "include",
+        "include_jni",
+        "include_platform",
+        "include_platform_header_only",
+    ],
+    apex_available: ["//apex_available:platform"],
+    srcs: ["libnativehelper_lazy.c"],
+    target: {
+        linux: {
+            version_script: "libnativehelper.map.txt",
+        },
+    },
 }
 
 //
@@ -141,13 +183,11 @@ cc_library_shared {
         "ExpandableString.c",
         "JNIHelp.c",
     ],
-    shared_libs: [
-        "liblog",
-    ],
     sdk_version: "19",
     stl: "none",
     apex_available: [
         "//apex_available:platform",
+        "com.android.extservices",
         "com.android.tethering",
     ],
     visibility: [
@@ -158,6 +198,7 @@ cc_library_shared {
         "//frameworks/base/packages/Tethering:__subpackages__",
         "//packages/modules/Connectivity/tests:__subpackages__",
         "//packages/modules/Connectivity/Tethering:__subpackages__",
+        "//packages/modules/ExtServices:__subpackages__",
         "//packages/modules/NetworkStack:__subpackages__",
         ":__subpackages__",
     ],
