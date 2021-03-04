@@ -51,6 +51,7 @@ enum MethodIndex {
     k_jniCreateString,
     k_jniLogException,
     k_jniRegisterNativeMethods,
+    k_jniThrowErrnoException,
     k_jniThrowException,
     k_jniThrowExceptionFmt,
     k_jniThrowIOException,
@@ -132,6 +133,7 @@ static void InitializeOnce() {
     BIND_SYMBOL(jniCreateString);
     BIND_SYMBOL(jniLogException);
     BIND_SYMBOL(jniRegisterNativeMethods);
+    BIND_SYMBOL(jniThrowErrnoException);
     BIND_SYMBOL(jniThrowException);
     BIND_SYMBOL(jniThrowExceptionFmt);
     BIND_SYMBOL(jniThrowIOException);
@@ -264,6 +266,11 @@ int jniRegisterNativeMethods(JNIEnv* env,
                              int numMethods) {
     typedef int (*M)(JNIEnv*, const char*, const JNINativeMethod*, int numMethods);
     INVOKE_METHOD(jniRegisterNativeMethods, M, env, className, gMethods, numMethods);
+}
+
+int jniThrowErrnoException(JNIEnv* env, const char* functionName, int errnum) {
+    typedef int (*M)(JNIEnv*, const char*, int);
+    INVOKE_METHOD(jniThrowErrnoException, M, env, functionName, errnum);
 }
 
 int jniThrowException(JNIEnv* env, const char* className, const char* msg) {
