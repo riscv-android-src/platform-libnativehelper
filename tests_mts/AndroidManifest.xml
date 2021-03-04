@@ -15,14 +15,14 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="android.libnativehelper.mts"
+    package="com.android.art.libnativehelper"
     android:targetSandboxVersion="2">
     <application android:usesCleartextTraffic="true">
         <uses-library android:name="android.test.runner" />
     </application>
 
     <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"
-                     android:targetPackage="android.libnativehelper.mts"
+                     android:targetPackage="com.android.art.libnativehelper"
                      android:label="MTS tests for libnativehelper">
         <meta-data android:name="listener"
             android:value="com.android.cts.runner.CtsTestRunListener" />

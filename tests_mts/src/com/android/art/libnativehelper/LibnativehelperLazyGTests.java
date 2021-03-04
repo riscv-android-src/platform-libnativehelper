@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.libnativehelper.mts;
+package com.android.art.libnativehelper;
 
 import com.android.gtestrunner.GtestRunner;
 import com.android.gtestrunner.TargetLibrary;
@@ -22,5 +22,5 @@ import com.android.gtestrunner.TargetLibrary;
 import org.junit.runner.RunWith;
 
 @RunWith(GtestRunner.class)
-@TargetLibrary("nativehelper_mts_jni")
-public class LibnativehelperGTests {}
+@TargetLibrary("nativehelper_lazy_mts_jni")
+public class LibnativehelperLazyGTests {}
