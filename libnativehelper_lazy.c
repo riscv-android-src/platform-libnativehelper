@@ -51,6 +51,7 @@ enum MethodIndex {
     k_jniCreateString,
     k_jniLogException,
     k_jniRegisterNativeMethods,
+    k_jniThrowErrnoException,
     k_jniThrowException,
     k_jniThrowExceptionFmt,
     k_jniThrowIOException,
@@ -106,14 +107,15 @@ static bool IsLibnativehelperLoaded() {
 //
 
 static void BindSymbol(void* handle, const char* name, enum MethodIndex index) {
-    g_Methods[index] = dlsym(handle, name);
-    LOG_FATAL_IF(*symbol == NULL,
-                 "Failed to find symbol '%s' in libnativehelper.so: %s", name, dlerror());
+    void* symbol = dlsym(handle, name);
+    LOG_ALWAYS_FATAL_IF(symbol == NULL,
+                        "Failed to find symbol '%s' in libnativehelper.so: %s", name, dlerror());
+    g_Methods[index] = symbol;
 }
 
 static void InitializeOnce() {
     void* handle = LoadLibnativehelper(RTLD_NOW);
-    LOG_FATAL_IF(handle == NULL, "Failed to load libnativehelper.so: %s", dlerror());
+    LOG_ALWAYS_FATAL_IF(handle == NULL, "Failed to load libnativehelper.so: %s", dlerror());
 
 #undef BIND_SYMBOL
 #define BIND_SYMBOL(name) BindSymbol(handle, #name, k_ ## name);
@@ -132,6 +134,7 @@ static void InitializeOnce() {
     BIND_SYMBOL(jniCreateString);
     BIND_SYMBOL(jniLogException);
     BIND_SYMBOL(jniRegisterNativeMethods);
+    BIND_SYMBOL(jniThrowErrnoException);
     BIND_SYMBOL(jniThrowException);
     BIND_SYMBOL(jniThrowExceptionFmt);
     BIND_SYMBOL(jniThrowIOException);
@@ -158,8 +161,8 @@ static void InitializeOnce() {
 
     // Check every symbol is bound.
     for (int i = 0; i < k_MethodCount; ++i) {
-        LOG_FATAL_IF(g_Methods[i] == NULL,
-                    "Uninitialized method in libnativehelper_lazy at index: %d", i);
+        LOG_ALWAYS_FATAL_IF(g_Methods[i] == NULL,
+                            "Uninitialized method in libnativehelper_lazy at index: %d", i);
     }
 }
 
@@ -264,6 +267,11 @@ int jniRegisterNativeMethods(JNIEnv* env,
                              int numMethods) {
     typedef int (*M)(JNIEnv*, const char*, const JNINativeMethod*, int numMethods);
     INVOKE_METHOD(jniRegisterNativeMethods, M, env, className, gMethods, numMethods);
+}
+
+int jniThrowErrnoException(JNIEnv* env, const char* functionName, int errnum) {
+    typedef int (*M)(JNIEnv*, const char*, int);
+    INVOKE_METHOD(jniThrowErrnoException, M, env, functionName, errnum);
 }
 
 int jniThrowException(JNIEnv* env, const char* className, const char* msg) {
