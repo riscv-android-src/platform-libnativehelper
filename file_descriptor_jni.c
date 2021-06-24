@@ -36,12 +36,12 @@ JNIEXPORT _Nullable jobject AFileDescriptor_create(JNIEnv* env) {
                              JniConstants_FileDescriptor_init(env));
 }
 
-JNIEXPORT int AFileDescriptor_getFD(JNIEnv* env, jobject fileDescriptor) {
+JNIEXPORT int AFileDescriptor_getFd(JNIEnv* env, jobject fileDescriptor) {
     EnsureArgumentIsFileDescriptor(env, fileDescriptor);
     return (*env)->GetIntField(env, fileDescriptor, JniConstants_FileDescriptor_descriptor(env));
 }
 
-JNIEXPORT void AFileDescriptor_setFD(JNIEnv* env, jobject fileDescriptor, int fd) {
+JNIEXPORT void AFileDescriptor_setFd(JNIEnv* env, jobject fileDescriptor, int fd) {
     EnsureArgumentIsFileDescriptor(env, fileDescriptor);
     (*env)->SetIntField(env, fileDescriptor, JniConstants_FileDescriptor_descriptor(env), fd);
 }

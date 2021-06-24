@@ -53,6 +53,7 @@ cc_library_headers {
         "//apex_available:platform",
         "//apex_available:anyapex",
     ],
+    ramdisk_available: true,
     // recovery_available currently required for libchrome (https://r.android.com/799940).
     recovery_available: true,
     visibility: ["//visibility:public"],
@@ -110,6 +111,7 @@ cc_library_shared {
         "JNIPlatformHelp.c",
         "JniConstants.c",
         "JniInvocation.c",
+        "file_descriptor_jni.c",
     ],
     export_include_dirs: [
         "header_only_include",
@@ -122,12 +124,6 @@ cc_library_shared {
     stubs: {
         symbol_file: "libnativehelper.map.txt",
         versions: ["S"],
-    },
-    target: {
-        android: {
-            // FileDescriptor NDK API is Android-only.
-            srcs: ["file_descriptor_jni.c"],
-        },
     },
     // Only distributed in the ART Module.
     apex_available: [
@@ -167,7 +163,7 @@ cc_library_static {
 // - This doesn't include JniInvocation.
 //
 
-cc_library_shared {
+cc_library {
     name: "libnativehelper_compat_libc++",
     defaults: ["libnativehelper_defaults"],
     header_libs: ["jni_headers"],
@@ -177,6 +173,7 @@ cc_library_shared {
         "header_only_include",
         "include",
     ],
+    host_supported: true,
     local_include_dirs: [
         "header_only_include",
         "include_platform_header_only",
@@ -185,10 +182,13 @@ cc_library_shared {
         "ExpandableString.c",
         "JNIHelp.c",
     ],
+    min_sdk_version: "29",
     sdk_version: "19",
     stl: "none",
     apex_available: [
         "//apex_available:platform",
+        "com.android.art",
+        "com.android.art.debug",
         "com.android.extservices",
         "com.android.tethering",
     ],
@@ -196,8 +196,9 @@ cc_library_shared {
         "//art:__subpackages__",
         "//cts:__subpackages__",
         "//external/perfetto:__subpackages__",
-        "//frameworks/base/tests/net/integration:__pkg__",
+        "//frameworks/base/packages/Connectivity/tests/integration:__pkg__",
         "//frameworks/base/packages/Tethering:__subpackages__",
+        "//libcore:__subpackages__",
         "//packages/modules/Connectivity/tests:__subpackages__",
         "//packages/modules/Connectivity/Tethering:__subpackages__",
         "//packages/modules/ExtServices:__subpackages__",
